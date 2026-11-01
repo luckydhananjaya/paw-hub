@@ -2,7 +2,14 @@ node_modules/
 android/
 www/
 fonts/
-PawNote.apk
 package-lock.json
 *.log
 .DS_Store
+__pycache__/
+*.jks
+*.keystore
+*.base64
+*.apk
+*.aab
+release/
+PawNote-signing/

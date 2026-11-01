@@ -39,8 +39,9 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+      - run: node --test tests/*.test.cjs
       - run: npm install
-      - run: mkdir -p www && cp index.html www/index.html && python3 prepare.py fonts
+      - run: mkdir -p www && cp index.html privacy.html www/ && python3 prepare.py fonts
       - run: npx cap add android
       - run: pip install --break-system-packages pillow && python3 prepare.py android
       - run: npx cap sync android
