@@ -1294,7 +1294,9 @@
       ],
       updatedAt: Date.now() - 1000 * 60 * 300
     }
-  ];
+  ].map(note => note.type === 'checklist'
+    ? { ...note, type: 'text', content: note.items.map(item => item.text).join('\n'), items: [] }
+    : note);
 
   // STATE MANAGEMENT
   let notes = [];
@@ -1419,7 +1421,17 @@
     if (!cap || !cap.isNativePlatform || !cap.isNativePlatform()) {
       throw new Error('Folder backup is available in the Android app.');
     }
-    return cap.registerPlugin('PawBackup');
+    // This single-file app uses the injected native bridge, not bundled @capacitor/core.
+    if (typeof cap.nativePromise !== 'function') {
+      throw new Error('Android backup bridge is unavailable. Please install the latest Paw Note build.');
+    }
+    return {
+      status: () => cap.nativePromise('PawBackup', 'status', {}),
+      chooseFolder: () => cap.nativePromise('PawBackup', 'chooseFolder', {}),
+      write: options => cap.nativePromise('PawBackup', 'write', options),
+      list: () => cap.nativePromise('PawBackup', 'list', {}),
+      read: options => cap.nativePromise('PawBackup', 'read', options)
+    };
   }
 
   function backupStatus(message) {
@@ -1770,8 +1782,8 @@
       title: '',
       animal: currentFilter !== 'all' ? currentFilter : 'dino',
       color: currentFilter !== 'all' ? currentFilter : 'dino',
-      type: 'checklist',
-      items: [{ text: '', done: false }],
+      type: 'text',
+      items: [],
       content: '',
       pinned: false,
       updatedAt: Date.now()
