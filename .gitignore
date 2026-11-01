@@ -1,0 +1,8 @@
+node_modules/
+android/
+www/
+fonts/
+PawNote.apk
+package-lock.json
+*.log
+.DS_Store
