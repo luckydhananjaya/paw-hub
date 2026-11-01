@@ -85,8 +85,8 @@ class MainActivity : ComponentActivity() {
                 }
             } else {
                 Column(Modifier.padding(20.dp)) {
-                    Text("Paw Hub", style = MaterialTheme.typography.headlineLarge)
-                    Text("Your thoughts, kept close.", style = MaterialTheme.typography.bodyMedium)
+                    Text("PawNote", style = MaterialTheme.typography.headlineLarge)
+                    Text("Simply a note app.", style = MaterialTheme.typography.bodyMedium)
                     Spacer(Modifier.height(16.dp))
                     OutlinedTextField(query, { query = it }, label = { Text("Search notes") }, modifier = Modifier.fillMaxWidth())
                     Spacer(Modifier.height(12.dp))
