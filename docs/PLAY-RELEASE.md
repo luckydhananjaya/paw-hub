@@ -2,6 +2,12 @@
 
 ## Signing setup (one time)
 
+Optional helper: after installing Java and authenticating GitHub CLI on a trusted
+computer, run `python3 scripts/setup-signing.py`. It configures repository secrets
+and starts the workflow. Keep the key and password recovery copy permanently.
+The manual procedure below is equivalent; use one procedure, not both to create
+different keys.
+
 Never commit a private keystore, its base64 encoding, or passwords. Keep an encrypted
 offline copy of the keystore and passwords. Do not reuse GetLuckyFit signing keys.
 
@@ -65,6 +71,10 @@ keep using Play for updates and validate data retention there.
    account dashboard for the requirement that applies to this account.
 
 ## Remaining readiness checks
+
+- Store copy, Data safety preparation and tester instructions are in
+  `docs/STORE-LISTING.md`. `privacy.html` is included in both Android build workflows
+  and linked from Settings. It still needs a verified public hosting URL for Play.
 
 - Run a real Play-installed update test: create notes, install higher-version Play
   release, confirm notes and folder permission remain.
