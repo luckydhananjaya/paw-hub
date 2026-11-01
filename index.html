@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -861,10 +861,10 @@
       <h1>Paw Note</h1>
     </div>
     <div class="header-actions">
-      <button class="icon-btn" onclick="toggleSearch()" title="Cari catatan">
+      <button class="icon-btn" onclick="toggleSearch()" title="Search notes">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16" y2="16"></line></svg>
       </button>
-      <button class="icon-btn" onclick="openSettings()" title="Pengaturan">
+      <button class="icon-btn" onclick="openSettings()" title="Settings">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
       </button>
     </div>
@@ -873,13 +873,13 @@
   <!-- EXPANDABLE SEARCH BAR -->
   <div class="search-container" id="search-bar">
     <div class="search-box">
-      <input type="text" id="search-input" placeholder="Cari judul atau isi catatan..." oninput="handleSearch()">
+      <input type="text" id="search-input" placeholder="Search notes..." oninput="handleSearch()">
     </div>
   </div>
 
   <!-- HORIZONTALLY SCROLLABLE ANIMAL CATEGORY ROW -->
   <div class="category-scroll">
-    <button class="cat-btn text-pill active" data-filter="all" onclick="filterCategory('all')">Semua</button>
+    <button class="cat-btn text-pill active" data-filter="all" onclick="filterCategory('all')">All</button>
     
     <!-- DOG CATEGORY BUTTON -->
     <button class="cat-btn icon-square" data-animal="dog" data-filter="dog" onclick="filterCategory('dog')" title="Dog">
@@ -986,12 +986,12 @@
         <path d="M28 42 Q32 38 36 42" stroke="#1C1B1A" stroke-width="2.5" fill="none"/>
       </svg>
     </div>
-    <div class="empty-text">Belum ada catatan</div>
-    <div class="empty-subtext">Ketuk tombol + paw kuning untuk menulis catatan baru!</div>
+    <div class="empty-text">No notes found</div>
+    <div class="empty-subtext">Tap the yellow + paw button to create a note!</div>
   </div>
 
   <!-- FLOATING ACTION BUTTON (YELLOW CIRCLE WITH + AND PAW) -->
-  <button class="fab-btn" onclick="openNewNote()" title="Tambah Catatan">
+  <button class="fab-btn" onclick="openNewNote()" title="Add note">
     <div class="fab-content">
       <span class="fab-plus">+</span>
       <svg class="fab-paw" viewBox="0 0 64 64">
@@ -1018,18 +1018,18 @@
       <!-- EDITOR HEADER TOOLBAR -->
       <div class="editor-header">
         <div class="editor-tools-left">
-          <button class="editor-tool-btn" onclick="closeEditor()" title="Kembali">
+          <button class="editor-tool-btn" onclick="closeEditor()" title="Back">
             <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
           </button>
         </div>
         <div class="editor-tools-right">
-          <button class="editor-tool-btn" id="pin-toggle-btn" onclick="togglePinCurrentNote()" title="Sematkan / Pin Catatan">
+          <button class="editor-tool-btn" id="pin-toggle-btn" onclick="togglePinCurrentNote()" title="Pin / unpin note">
             <svg viewBox="0 0 24 24" id="pin-icon-svg"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-2l-2-2V5a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v8l-2 2v2z"></path></svg>
           </button>
-          <button class="editor-tool-btn" onclick="toggleChecklistMode()" title="Mode Checklist / Teks" id="mode-toggle-btn">
+          <button class="editor-tool-btn" onclick="toggleChecklistMode()" title="Toggle checklist / text" id="mode-toggle-btn">
             <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
           </button>
-          <button class="editor-tool-btn" onclick="deleteCurrentNote()" title="Hapus Catatan">
+          <button class="editor-tool-btn" onclick="deleteCurrentNote()" title="Delete note">
             <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
           </button>
         </div>
@@ -1057,7 +1057,7 @@
       <!-- SCROLLABLE NOTE CONTENT -->
       <div class="editor-content-scroll">
         <div class="editor-top-area">
-          <input type="text" class="editor-title-input" id="editor-title" placeholder="Judul Catatan..." oninput="autoSaveNote()">
+          <input type="text" class="editor-title-input" id="editor-title" placeholder="Note title..." oninput="autoSaveNote()">
           <div class="editor-animal-mascot" id="editor-mascot">
             <!-- Injected dynamically -->
           </div>
@@ -1065,14 +1065,14 @@
 
         <div class="editor-body-container">
           <!-- PLAIN TEXT MODE -->
-          <textarea class="editor-text-body" id="editor-text" placeholder="Tulis isi catatan di sini..." oninput="autoSaveNote()"></textarea>
+          <textarea class="editor-text-body" id="editor-text" placeholder="Write your note here..." oninput="autoSaveNote()"></textarea>
 
           <!-- CHECKLIST MODE -->
           <div class="editor-checklist-body" id="editor-checklist" style="display: none;">
             <div id="checklist-items-container"></div>
             <div class="add-check-row" onclick="addChecklistItem()">
               <div class="add-check-plus">+</div>
-              <span>Tambah item baru...</span>
+              <span>Add item...</span>
             </div>
           </div>
         </div>
@@ -1084,33 +1084,33 @@
   <div class="editor-overlay" id="settings-overlay" onclick="handleSettingsOverlayClick(event)">
     <div class="settings-sheet">
       <div class="settings-title">
-        <span>Pengaturan</span>
+        <span>Settings</span>
         <button class="icon-btn" onclick="closeSettings()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
       </div>
 
       <div class="settings-item">
         <div>
           <div style="font-weight: bold; font-size: 17px;">Paw Note</div>
-          <div style="font-size: 13px; color: #7A7571;">Versi 1.0.0 (Capacitor 8)</div>
+          <div style="font-size: 13px; color: #7A7571;">Version 1.0.0 (Capacitor 8)</div>
         </div>
         <span style="font-size: 20px;">🐾</span>
       </div>
 
       <div class="settings-item">
-        <button class="settings-btn" onclick="exportNotesBackup()">💾 Cadangkan Catatan (Export JSON)</button>
+        <button class="settings-btn" onclick="exportNotesBackup()">💾 Back up notes (JSON)</button>
       </div>
 
       <div class="settings-item">
         <label class="settings-btn" style="cursor: pointer; display: block;">
-          📂 Pulihkan Catatan (Import JSON)
+          📂 Restore notes (JSON)
           <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importNotesBackup(event)">
         </label>
       </div>
 
       <div class="settings-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
-        <div style="font-weight: bold; font-size: 15px;">Privasi & Offline-First</div>
+        <div style="font-weight: bold; font-size: 15px;">Privacy & offline access</div>
         <div style="font-size: 13px; color: #7A7571; line-height: 1.4;">
-          Semua catatan tersimpan 100% di perangkat Anda (IndexedDB lokal). Tidak memerlukan akun atau server cloud.
+          Your notes are stored on this device. No account or cloud server is required.
         </div>
       </div>
     </div>
@@ -1230,14 +1230,14 @@
   const INITIAL_SAMPLE_NOTES = [
     {
       id: "note-1",
-      title: "Belanja Pasar",
+      title: "Grocery shopping",
       animal: "dog",
       color: "dog",
       type: "checklist",
       items: [
         { text: "Oat milk", done: true },
-        { text: "Kopi beans", done: true },
-        { text: "Apel fuji", done: false }
+        { text: "Coffee beans", done: true },
+        { text: "Fuji apples", done: false }
       ],
       updatedAt: Date.now() - 1000 * 60 * 30
     },
@@ -1247,12 +1247,12 @@
       animal: "bunny",
       color: "bunny",
       type: "text",
-      content: "Beli mechanical keyboard warna pastel pink!",
+      content: "Buy a pastel pink mechanical keyboard!",
       updatedAt: Date.now() - 1000 * 60 * 60
     },
     {
       id: "note-3",
-      title: "Workout Rutin",
+      title: "Workout routine",
       animal: "dino",
       color: "dino",
       type: "checklist",
@@ -1264,11 +1264,11 @@
     },
     {
       id: "note-4",
-      title: "Bayar Tagihan",
+      title: "Pay bills",
       animal: "elephant",
       color: "elephant",
       type: "text",
-      content: "• Bayar sebelum tanggal 10!",
+      content: "• Pay before the 10th!",
       updatedAt: Date.now() - 1000 * 60 * 180
     },
     {
@@ -1282,13 +1282,13 @@
     },
     {
       id: "note-6",
-      title: "Beli Hadiah",
+      title: "Buy gifts",
       animal: "bunny",
       color: "bunny",
       type: "checklist",
       items: [
-        { text: "Hadiah mama", done: true },
-        { text: "Kartu ucapan", done: false }
+        { text: "Gift for Mom", done: true },
+        { text: "Greeting card", done: false }
       ],
       updatedAt: Date.now() - 1000 * 60 * 300
     }
@@ -1457,14 +1457,14 @@
 
     grid.innerHTML = filtered.map(note => {
       const badgeSvg = ANIMAL_SVGS[note.animal] || ANIMAL_SVGS.dog;
-      const pinBadge = note.pinned ? `<span style="font-size: 14px; margin-right: 4px;" title="Disematkan">📌</span>` : '';
+      const pinBadge = note.pinned ? `<span style="font-size: 14px; margin-right: 4px;" title="Pinned">📌</span>` : '';
       
       if (note.type === 'special-damjar') {
         return `
           <div class="note-card special-damjar" onclick="openNote('${note.id}')">
             <div class="card-top">
               ${pinBadge}
-              <span class="card-title">${escapeHtml(note.title || 'Catatan')}</span>
+              <span class="card-title">${escapeHtml(note.title || 'Note')}</span>
             </div>
             <div class="damjar-inner">
               <div class="damjar-corner-cat">${badgeSvg}</div>
@@ -1499,7 +1499,7 @@
         <div class="note-card color-${note.color || 'dog'}" onclick="openNote('${note.id}')">
           <div class="card-top">
             <div class="card-animal-badge">${badgeSvg}</div>
-            <div class="card-title">${pinBadge}${escapeHtml(note.title || 'Tanpa Judul')}</div>
+            <div class="card-title">${pinBadge}${escapeHtml(note.title || 'Untitled')}</div>
           </div>
           ${bodyHtml}
         </div>
@@ -1691,7 +1691,7 @@
         <div class="editor-check-square" onclick="toggleEditorItemDone(${idx})">
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
-        <input type="text" class="editor-check-input" value="${escapeHtml(item.text)}" placeholder="Ketik item..." oninput="updateEditorItemText(${idx}, this.value)" onkeydown="handleChecklistKeyDown(event, ${idx})">
+        <input type="text" class="editor-check-input" value="${escapeHtml(item.text)}" placeholder="Type an item..." oninput="updateEditorItemText(${idx}, this.value)" onkeydown="handleChecklistKeyDown(event, ${idx})">
         <button class="remove-check-btn" onclick="removeEditorItem(${idx})">×</button>
       </div>
     `).join('');
@@ -1785,7 +1785,7 @@
 
   async function deleteCurrentNote() {
     if (!activeNote) return;
-    if (confirm('Hapus catatan ini?')) {
+    if (confirm('Delete this note?')) {
       const idToDelete = activeNote.id;
       notes = notes.filter(n => n.id !== idToDelete);
       await deleteNoteFromStorage(idToDelete);
@@ -1839,13 +1839,13 @@
           await idbBulkPut(notes);
           sortNotes();
           renderNotes();
-          alert('Berhasil memulihkan ' + imported.length + ' catatan!');
+          alert('Restored ' + imported.length + ' notes!');
           closeSettings();
         } else {
-          alert('Format berkas tidak valid.');
+          alert('Invalid backup file format.');
         }
       } catch (err) {
-        alert('Gagal membaca berkas cadangan.');
+        alert('Could not read the backup file.');
       }
     };
     reader.readAsText(file);
