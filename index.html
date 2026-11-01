@@ -1107,6 +1107,10 @@
         </label>
       </div>
 
+      <div class="settings-item">
+        <button class="settings-btn" onclick="showBackupText('import')">Paste backup text</button>
+      </div>
+
       <div class="settings-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
         <div style="font-weight: bold; font-size: 15px;">Privacy & offline access</div>
         <div style="font-size: 13px; color: #7A7571; line-height: 1.4;">
@@ -1819,36 +1823,108 @@
     }
   }
 
-  function exportNotesBackup() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notes, null, 2));
-    const dlAnchorElem = document.createElement('a');
-    dlAnchorElem.setAttribute("href", dataStr);
-    dlAnchorElem.setAttribute("download", `PawNote_Backup_${new Date().toISOString().slice(0,10)}.json`);
-    dlAnchorElem.click();
-  }
-
-  function importNotesBackup(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-      try {
-        const imported = JSON.parse(e.target.result);
-        if (Array.isArray(imported)) {
-          notes = imported;
-          await idbBulkPut(notes);
-          sortNotes();
-          renderNotes();
-          alert('Restored ' + imported.length + ' notes!');
+  function showBackupText(mode) {
+    const existing = document.getElementById('backup-dialog');
+    if (existing) existing.remove();
+    const dialog = document.createElement('dialog');
+    dialog.id = 'backup-dialog';
+    dialog.style.cssText = 'margin:auto;padding:20px;width:92%;max-width:420px;border:2px solid #1C1B1A;border-radius:16px;background:#FFF6E3;';
+    const heading = document.createElement('h2');
+    heading.textContent = mode === 'export' ? 'Back up notes' : 'Restore notes';
+    const help = document.createElement('p');
+    help.textContent = mode === 'export'
+      ? 'Copy this backup text and save it outside Paw Note. A backup is safe only after you have saved and checked the copied text.'
+      : 'Paste a Paw Note JSON backup below. Restored notes are merged with existing notes; matching IDs use the backup version.';
+    const area = document.createElement('textarea');
+    area.style.cssText = 'width:100%;height:240px;margin:12px 0;user-select:text;';
+    area.setAttribute('aria-label', 'Backup JSON');
+    area.value = mode === 'export' ? JSON.stringify(notes, null, 2) : '';
+    area.readOnly = mode === 'export';
+    const action = document.createElement('button');
+    action.textContent = mode === 'export' ? 'Select backup text' : 'Restore';
+    action.onclick = async () => {
+      if (mode === 'export') {
+        area.focus();
+        area.select();
+        area.setSelectionRange(0, area.value.length);
+        help.textContent = 'Text selected. Use Copy, then paste it into a file or another trusted app. Nothing has been saved automatically.';
+      } else {
+        action.disabled = true;
+        try {
+          const count = await restoreBackupText(area.value);
+          dialog.close();
+          dialog.remove();
+          alert('Restored ' + count + ' notes.');
           closeSettings();
-        } else {
-          alert('Invalid backup file format.');
+        } catch (err) {
+          help.textContent = err.message;
+        } finally {
+          action.disabled = false;
         }
-      } catch (err) {
-        alert('Could not read the backup file.');
       }
     };
-    reader.readAsText(file);
+    const close = document.createElement('button');
+    close.textContent = 'Close';
+    close.style.marginLeft = '12px';
+    close.onclick = () => { dialog.close(); dialog.remove(); };
+    dialog.append(heading, help, area, action, close);
+    document.body.append(dialog);
+    dialog.showModal();
+  }
+
+  function exportNotesBackup() {
+    showBackupText('export');
+  }
+
+  function validateBackupText(text) {
+    let imported;
+    try { imported = JSON.parse(text); }
+    catch (_) { throw new Error('Invalid JSON. Paste a complete Paw Note backup.'); }
+    if (!Array.isArray(imported) || imported.length === 0) {
+      throw new Error('Backup must contain a non-empty list of Paw Note notes.');
+    }
+    const ids = new Set();
+    const animals = ['dog', 'bunny', 'dino', 'elephant', 'cat'];
+    for (const note of imported) {
+      if (!note || typeof note !== 'object' ||
+          typeof note.id !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(note.id) ||
+          ids.has(note.id) || typeof note.title !== 'string' ||
+          !animals.includes(note.animal) || !animals.includes(note.color) ||
+          !['text', 'checklist', 'special-damjar'].includes(note.type) ||
+          (note.type !== 'checklist' && typeof note.content !== 'string') ||
+          (note.type === 'checklist' && (!Array.isArray(note.items) ||
+            note.items.some(item => !item || typeof item.text !== 'string' || typeof item.done !== 'boolean')))) {
+        throw new Error('This file is not a valid Paw Note backup. Existing notes have not been changed.');
+      }
+      ids.add(note.id);
+    }
+    return imported;
+  }
+
+  async function restoreBackupText(text) {
+    const imported = validateBackupText(text);
+    const merged = new Map(notes.map(note => [note.id, note]));
+    imported.forEach(note => merged.set(note.id, note));
+    const next = [...merged.values()];
+    await idbBulkPut(next);
+    notes = next;
+    sortNotes();
+    renderNotes();
+    return imported.length;
+  }
+
+  async function importNotesBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      const count = await restoreBackupText(await file.text());
+      alert('Restored ' + count + ' notes.');
+      closeSettings();
+    } catch (err) {
+      alert(err.message || 'Could not restore the backup. Existing notes have not been changed.');
+    } finally {
+      event.target.value = '';
+    }
   }
 
   // CAPACITOR & ADMOB INITIALIZATION
