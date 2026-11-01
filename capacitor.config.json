@@ -1,0 +1,9 @@
+{
+  "appId": "com.luckydhananjaya.pawnote",
+  "appName": "Paw Note",
+  "webDir": "www",
+  "backgroundColor": "#FFF6E3",
+  "android": {
+    "allowMixedContent": false
+  }
+}
