@@ -47,7 +47,7 @@ Google test ads in this build.
 | Audience | Owner must select actual intended audience; do not infer children from animal artwork |
 | Content rating | Complete IARC using actual app functionality; no rating claimed here |
 | Data safety | Account for included AdMob SDK as well as app code; see below |
-| Artwork | Upload a 512×512 icon, 1024×500 feature graphic and genuine device screenshots |
+| Artwork | `store-assets/icon-512.png` and `store-assets/feature-1024x500.png` are ready; genuine device screenshots still required |
 
 ## Data safety preparation
 
@@ -90,7 +90,7 @@ Please check:
 - Persistent upload key configured and recovery copy retained.
 - Signed-release workflow successful; APK/AAB signature reports inspected.
 - Public privacy URL and verified support email supplied.
-- Genuine listing artwork/screenshots uploaded.
+- Prepared icon/feature graphic and genuine device screenshots uploaded.
 - Final Data safety, audience, ads and content-rating forms submitted accurately.
 - AAB accepted by Play validation (including target SDK/native-library checks).
 - Closed track approved/available; tester invitations and opt-ins complete.
