@@ -1,0 +1,79 @@
+name: Signed Android Release
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'Version name (for example 1.0.0)'
+        required: true
+        default: '1.0.0'
+permissions:
+  contents: read
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: android-release
+    env:
+      PAW_VERSION_NAME: ${{ inputs.version_name }}
+      PAW_KEYSTORE_BASE64: ${{ secrets.PAW_KEYSTORE_BASE64 }}
+      PAW_STORE_PASSWORD: ${{ secrets.PAW_STORE_PASSWORD }}
+      PAW_KEY_ALIAS: ${{ secrets.PAW_KEY_ALIAS }}
+      PAW_KEY_PASSWORD: ${{ secrets.PAW_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check signing setup
+        shell: bash
+        run: |
+          for name in PAW_KEYSTORE_BASE64 PAW_STORE_PASSWORD PAW_KEY_ALIAS PAW_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing signing secret: $name. See docs/PLAY-RELEASE.md."
+              exit 1
+            fi
+          done
+          echo "PAW_VERSION_CODE=$((1000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+          echo "PAW_KEYSTORE_PATH=$RUNNER_TEMP/paw-upload.jks" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm install
+      - run: mkdir -p www && cp index.html www/index.html && python3 prepare.py fonts
+      - run: npx cap add android
+      - run: pip install --break-system-packages pillow && python3 prepare.py android
+      - run: npx cap sync android
+      - name: Decode upload key and configure release
+        shell: bash
+        run: |
+          umask 077
+          printf '%s' "$PAW_KEYSTORE_BASE64" | base64 --decode > "$PAW_KEYSTORE_PATH"
+          python3 scripts/configure-release.py --signed
+      - name: Build signed APK and AAB
+        run: chmod +x android/gradlew && cd android && ./gradlew --no-daemon assembleRelease bundleRelease
+      - name: Verify signatures and record release
+        shell: bash
+        run: |
+          mkdir -p release
+          cp android/app/build/outputs/apk/release/app-release.apk release/PawNote-release.apk
+          cp android/app/build/outputs/bundle/release/app-release.aab release/PawNote-release.aab
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)"
+          "$APKSIGNER" verify --verbose --print-certs release/PawNote-release.apk > release/APK-signature.txt
+          jarsigner -verify release/PawNote-release.aab > release/AAB-signature.txt
+          if ! grep -q 'jar verified' release/AAB-signature.txt; then
+            echo "::error::AAB signature verification failed"
+            exit 1
+          fi
+          keytool -exportcert -rfc -keystore "$PAW_KEYSTORE_PATH" -storepass:env PAW_STORE_PASSWORD -alias "$PAW_KEY_ALIAS" -file release/upload-certificate.pem
+          sha256sum release/PawNote-release.apk release/PawNote-release.aab > release/SHA256SUMS.txt
+          printf 'commit=%s\nversionName=%s\nversionCode=%s\n' "$GITHUB_SHA" "$PAW_VERSION_NAME" "$PAW_VERSION_CODE" > release/build-info.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PawNote-signed-release
+          path: release/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Remove signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/paw-upload.jks"
