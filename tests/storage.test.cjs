@@ -61,6 +61,17 @@ test('first installation seeds plain-text samples once', async () => {
   assert.equal(run('localStorage.getItem(INITIALIZED_KEY)'), 'yes');
 });
 
+test('preference quota failure does not replace notes loaded from IndexedDB', async () => {
+  const {run} = harness();
+  run(`idbGetAll = async () => [{id:'retained',updatedAt:1}];
+    localStorage.setItem = () => { throw Error('quota exceeded'); };
+    console = {warn() {}};
+    renderNotes = () => {}; initCapacitorAndAdMob = () => {};`);
+  await run('initNotes()');
+  assert.equal(run('notes[0].id'), 'retained');
+  assert.equal(run('notes.length'), 1);
+});
+
 test('malformed backups are rejected before writes', () => {
   const {run, context} = harness();
   for (const text of ['{}','not json','[{"id":"bad"}]']) {

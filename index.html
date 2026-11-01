@@ -1316,6 +1316,12 @@
   const STORE_NAME = 'notes';
   const INITIALIZED_KEY = 'paw_note_initialized_v1';
 
+  function markInitialized() {
+    // A preference write failure must not replace notes already read from IndexedDB.
+    try { localStorage.setItem(INITIALIZED_KEY, 'yes'); }
+    catch (err) { console.warn('Could not store first-launch preference:', err); }
+  }
+
   function openIndexedDB() {
     return new Promise((resolve, reject) => {
       if (!('indexedDB' in window)) {
@@ -1396,7 +1402,7 @@
         notes = INITIAL_SAMPLE_NOTES;
         await idbBulkPut(notes);
       }
-      localStorage.setItem(INITIALIZED_KEY, 'yes');
+      markInitialized();
     } catch (err) {
       console.warn('IndexedDB unavailable, falling back to LocalStorage:', err);
       const saved = localStorage.getItem('paw_notes_data');
@@ -1652,7 +1658,7 @@
   async function deleteNoteFromStorage(id) {
     try {
       await idbDelete(id);
-      localStorage.setItem(INITIALIZED_KEY, 'yes');
+      markInitialized();
     } catch (e) {
       localStorage.setItem('paw_notes_data', JSON.stringify(notes));
     }
