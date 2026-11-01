@@ -1097,18 +1097,7 @@
       </div>
 
       <div class="settings-item">
-        <button class="settings-btn" onclick="exportNotesBackup()">💾 Back up notes (JSON)</button>
-      </div>
-
-      <div class="settings-item">
-        <label class="settings-btn" style="cursor: pointer; display: block;">
-          📂 Restore notes (JSON)
-          <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importNotesBackup(event)">
-        </label>
-      </div>
-
-      <div class="settings-item">
-        <button class="settings-btn" onclick="showBackupText('import')">Paste backup text</button>
+        <button class="settings-btn" onclick="openAutoBackups()">Automatic backups & restore</button>
       </div>
 
       <div class="settings-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
@@ -1412,6 +1401,107 @@
     });
   }
 
+  const AUTO_BACKUP_KEY = 'paw_note_auto_backups_v1';
+  let backupWarningShown = false;
+
+  function readAutoBackups() {
+    const raw = localStorage.getItem(AUTO_BACKUP_KEY);
+    if (!raw) return [];
+    const entries = JSON.parse(raw);
+    if (!Array.isArray(entries)) throw new Error('Could not read automatic backups.');
+    return entries;
+  }
+
+  function createAutoBackup(reason = 'Saved automatically') {
+    try {
+      const entries = readAutoBackups();
+      const data = JSON.stringify(notes);
+      if (entries[0] && JSON.stringify(entries[0].notes) === data) return true;
+      entries.unshift({ id: Date.now() + '-' + Math.random().toString(36).slice(2), time: Date.now(), reason, notes: JSON.parse(data) });
+      localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(entries.slice(0, 20)));
+      backupWarningShown = false;
+      return true;
+    } catch (err) {
+      if (!backupWarningShown) {
+        backupWarningShown = true;
+        alert('Automatic backup could not be saved. Your current notes are still available. Free up device storage and try again.');
+      }
+      return false;
+    }
+  }
+
+  function openAutoBackups() {
+    const existing = document.getElementById('auto-backup-dialog');
+    if (existing) existing.remove();
+    const dialog = document.createElement('dialog');
+    dialog.id = 'auto-backup-dialog';
+    dialog.style.cssText = 'margin:auto;padding:20px;width:92%;max-width:420px;max-height:80vh;overflow:auto;border:2px solid #1C1B1A;border-radius:16px;background:#FFF6E3;';
+    const title = document.createElement('h2');
+    title.textContent = 'Automatic backups';
+    const help = document.createElement('p');
+    help.textContent = 'Recent versions are saved on this device as you edit. Uninstalling or clearing app data also removes these backups.';
+    dialog.append(title, help);
+    try {
+      const entries = readAutoBackups();
+      if (!entries.length) {
+        const empty = document.createElement('p');
+        empty.textContent = 'No backups yet. Edit a note to create one automatically.';
+        dialog.append(empty);
+      }
+      for (const entry of entries) {
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:12px 0;border-bottom:1px solid #aaa;';
+        const label = document.createElement('p');
+        label.textContent = new Date(entry.time).toLocaleString() + ' · ' + entry.notes.length + ' notes · ' + entry.reason;
+        const restore = document.createElement('button');
+        restore.textContent = 'Restore this version';
+        restore.onclick = async () => {
+          if (!confirm('Restore this version? Your current notes will be backed up first.')) return;
+          restore.disabled = true;
+          try {
+            const target = JSON.parse(JSON.stringify(entry.notes));
+            // Validate non-empty snapshots; an empty snapshot is also a valid prior state.
+            if (target.length) validateBackupText(JSON.stringify(target));
+            if (!createAutoBackup('Before restore')) throw new Error('Could not protect current notes');
+            if (!dbInstance) dbInstance = await openIndexedDB();
+            await new Promise((resolve, reject) => {
+              const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+              const store = tx.objectStore(STORE_NAME);
+              store.clear();
+              target.forEach(note => store.put(note));
+              tx.oncomplete = resolve;
+              tx.onerror = () => reject(tx.error);
+              tx.onabort = () => reject(tx.error || new Error('Restore cancelled'));
+            });
+            localStorage.removeItem('paw_notes_data');
+            notes = target;
+            sortNotes();
+            renderNotes();
+            createAutoBackup('Restored version');
+            dialog.close();
+            dialog.remove();
+            alert('Notes restored.');
+          } catch (err) {
+            alert('Could not restore this version. Please try again.');
+            restore.disabled = false;
+          }
+        };
+        row.append(label, restore);
+        dialog.append(row);
+      }
+    } catch (err) {
+      const error = document.createElement('p');
+      error.textContent = 'Could not load backups. Please try again.';
+      dialog.append(error);
+    }
+    const close = document.createElement('button');
+    close.textContent = 'Close';
+    close.onclick = () => { dialog.close(); dialog.remove(); };
+    dialog.append(close);
+    document.body.append(dialog);
+    dialog.showModal();
+  }
+
   async function saveNoteToStorage(note) {
     try {
       await idbPut(note);
@@ -1419,6 +1509,7 @@
       // LocalStorage fallback
       localStorage.setItem('paw_notes_data', JSON.stringify(notes));
     }
+    createAutoBackup();
   }
 
   async function deleteNoteFromStorage(id) {
@@ -1790,6 +1881,8 @@
   async function deleteCurrentNote() {
     if (!activeNote) return;
     if (confirm('Delete this note?')) {
+      clearTimeout(autoSaveTimeout);
+      createAutoBackup('Before delete');
       const idToDelete = activeNote.id;
       notes = notes.filter(n => n.id !== idToDelete);
       await deleteNoteFromStorage(idToDelete);
@@ -1908,6 +2001,7 @@
     const next = [...merged.values()];
     await idbBulkPut(next);
     notes = next;
+    createAutoBackup('Imported notes');
     sortNotes();
     renderNotes();
     return imported.length;
