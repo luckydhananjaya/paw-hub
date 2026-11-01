@@ -1651,7 +1651,7 @@
   function toggleChecklistMode() {
     if (!activeNote) return;
     if (activeNote.type === 'checklist') {
-      const text = (activeNote.items || []).map(i => (i.done ? '[x] ' : '[ ] ') + i.text).join('\n');
+      const text = (activeNote.items || []).map(i => i.text).join('\n');
       activeNote.content = text;
       activeNote.type = 'text';
       document.getElementById('editor-text').value = text;
