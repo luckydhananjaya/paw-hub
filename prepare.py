@@ -30,6 +30,20 @@ def android():
         open(p, 'w').write(s)
     open(main + 'res/values/ic_launcher_background.xml', 'w').write(
         '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#FFD84D</color>\n</resources>\n')
+    # Install the app-local Storage Access Framework plugin.
+    package_dir = main + 'java/com/luckydhananjaya/pawnote/'
+    os.makedirs(package_dir, exist_ok=True)
+    shutil.copy('native/PawBackupPlugin.java', package_dir + 'PawBackupPlugin.java')
+    open(package_dir + 'MainActivity.java', 'w').write("""package com.luckydhananjaya.pawnote;
+import android.os.Bundle;
+import com.getcapacitor.BridgeActivity;
+public class MainActivity extends BridgeActivity {
+    @Override public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(PawBackupPlugin.class);
+        super.onCreate(savedInstanceState);
+    }
+}
+""")
     INK = (28, 27, 26, 255); YEL = (255, 216, 77, 255)
     def paw(size, scale):
         S = size * 4

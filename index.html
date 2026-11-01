@@ -1097,13 +1097,22 @@
       </div>
 
       <div class="settings-item">
-        <button class="settings-btn" onclick="openAutoBackups()">Automatic backups & restore</button>
+        <div style="width:100%;">
+          <button class="settings-btn" onclick="backupToFolder()">Backup</button>
+          <p id="folder-backup-status" style="font-size:13px;margin-top:8px;">Choose a folder once to enable automatic backups.</p>
+        </div>
       </div>
 
+      <div class="settings-item">
+        <button class="settings-btn" onclick="restoreFromFolder()">Restore</button>
+      </div>
+      <div class="settings-item">
+        <button class="settings-btn" onclick="changeBackupFolder()">Choose backup folder</button>
+      </div>
       <div class="settings-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
         <div style="font-weight: bold; font-size: 15px;">Privacy & offline access</div>
         <div style="font-size: 13px; color: #7A7571; line-height: 1.4;">
-          Your notes are stored on this device. No account or cloud server is required.
+          Notes are stored on this device. Folder backups survive uninstall if you keep the selected folder. After reinstalling, tap Restore and select that folder again. Cloud folders depend on your storage provider; a local folder does not protect against losing your phone.
         </div>
       </div>
     </div>
@@ -1401,6 +1410,112 @@
     });
   }
 
+  let externalBackupTimer;
+  let externalBackupQueue = Promise.resolve();
+  let restoringFolderBackup = false;
+
+  function folderBackupPlugin() {
+    const cap = window.Capacitor;
+    if (!cap || !cap.isNativePlatform || !cap.isNativePlatform()) {
+      throw new Error('Folder backup is available in the Android app.');
+    }
+    return cap.registerPlugin('PawBackup');
+  }
+
+  function backupStatus(message) {
+    const el = document.getElementById('folder-backup-status');
+    if (el) el.textContent = message;
+  }
+
+  function scheduleFolderBackup() {
+    if (restoringFolderBackup || localStorage.getItem('paw_folder_backup_enabled') !== 'yes') return;
+    clearTimeout(externalBackupTimer);
+    backupStatus('Backup pending…');
+    externalBackupTimer = setTimeout(() => {
+      writeFolderBackup().catch(err => backupStatus(err.message));
+    }, 1200);
+  }
+
+  function writeFolderBackup() {
+    const data = JSON.stringify(notes);
+    const job = externalBackupQueue.then(async () => {
+      backupStatus('Saving backup…');
+      await folderBackupPlugin().write({ data });
+      const time = new Date().toLocaleString();
+      localStorage.setItem('paw_folder_backup_time', time);
+      backupStatus('Last backup: ' + time);
+    });
+    externalBackupQueue = job.catch(() => {});
+    return job;
+  }
+
+  async function backupToFolder() {
+    try {
+      const plugin = folderBackupPlugin();
+      if (activeNote) await persistCurrentNote();
+      const status = await plugin.status();
+      if (!status.configured) await plugin.chooseFolder();
+      clearTimeout(externalBackupTimer);
+      await writeFolderBackup();
+      localStorage.setItem('paw_folder_backup_enabled', 'yes');
+      alert('Backup saved. New notes and edits will now be backed up automatically while the app is open.');
+    } catch (err) {
+      backupStatus(err.message);
+      alert(err.message);
+    }
+  }
+
+  async function changeBackupFolder() {
+    try {
+      await folderBackupPlugin().chooseFolder();
+      localStorage.removeItem('paw_folder_backup_enabled');
+      backupStatus('Folder selected. Tap Backup to enable automatic backups, or Restore to recover notes.');
+    } catch (err) { alert(err.message); }
+  }
+
+  async function restoreFromFolder() {
+    let dialog;
+    try {
+      const plugin = folderBackupPlugin();
+      const status = await plugin.status();
+      if (!status.configured) await plugin.chooseFolder();
+      const result = await plugin.list();
+      if (!result.entries.length) throw new Error('No Paw Note backups found. Select the folder used before uninstalling.');
+      dialog = document.createElement('dialog');
+      dialog.style.cssText = 'margin:auto;padding:20px;width:92%;max-width:420px;max-height:80vh;overflow:auto;background:#FFF6E3;border-radius:16px;';
+      const heading = document.createElement('h2');
+      heading.textContent = 'Restore backup';
+      dialog.append(heading);
+      for (const entry of result.entries) {
+        const button = document.createElement('button');
+        button.style.cssText = 'display:block;width:100%;padding:12px;margin:8px 0;overflow-wrap:anywhere;';
+        button.textContent = entry.name;
+        button.onclick = async () => {
+          if (!confirm('Merge this backup with your notes? Matching notes use the backup version.')) return;
+          button.disabled = true;
+          restoringFolderBackup = true;
+          clearTimeout(externalBackupTimer);
+          try {
+            await externalBackupQueue;
+            const backup = await plugin.read({id: entry.id});
+            const count = await restoreBackupText(backup.data);
+            dialog.close(); dialog.remove();
+            backupStatus('Restored ' + count + ' notes. Tap Backup to save the current version.');
+            alert('Restored ' + count + ' notes.');
+          } catch (err) { alert(err.message); button.disabled = false; }
+          finally { restoringFolderBackup = false; }
+        };
+        dialog.append(button);
+      }
+      const close = document.createElement('button');
+      close.textContent = 'Close';
+      close.onclick = () => { dialog.close(); dialog.remove(); };
+      dialog.append(close);
+      document.body.append(dialog);
+      dialog.showModal();
+    } catch (err) { alert(err.message); }
+  }
+
   const AUTO_BACKUP_KEY = 'paw_note_auto_backups_v1';
   let backupWarningShown = false;
 
@@ -1510,6 +1625,7 @@
       localStorage.setItem('paw_notes_data', JSON.stringify(notes));
     }
     createAutoBackup();
+    scheduleFolderBackup();
   }
 
   async function deleteNoteFromStorage(id) {
@@ -1518,6 +1634,7 @@
     } catch (e) {
       localStorage.setItem('paw_notes_data', JSON.stringify(notes));
     }
+    scheduleFolderBackup();
   }
 
   // RENDER NOTES GRID
@@ -1901,6 +2018,8 @@
 
   // SETTINGS MODAL
   function openSettings() {
+    const time = localStorage.getItem('paw_folder_backup_time');
+    backupStatus(time ? 'Last backup: ' + time : 'Choose a folder once to enable automatic backups.');
     document.getElementById('settings-overlay').classList.add('settings-active');
     document.getElementById('settings-overlay').classList.add('active');
   }
