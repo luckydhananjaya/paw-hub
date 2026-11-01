@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Paw Note</title>
+  <style>
+    @font-face {
+      font-family: 'Caveat Brush';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('fonts/caveat-brush-latin-400-normal.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'Itim';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('fonts/itim-latin-400-normal.woff2') format('woff2');
+    }
+
+    :root {
+      --bg-cream: #FFF6E3;
+      --ink: #1C1B1A;
+      --yellow-action: #FFD84D;
+      --dog-yellow: #FFF0B3;
+      --bunny-pink: #FFD0DC;
+      --dino-mint: #BCE8D3;
+      --elephant-blue: #C9E9F8;
+      --cat-orange: #FFE6A5;
+      --border-thick: 2.5px solid var(--ink);
+      --shadow-sticker: 0 3px 0 var(--ink);
+      --shadow-sticker-sm: 0 2px 0 var(--ink);
+      --shadow-sticker-lg: 0 4px 0 var(--ink);
+      --font-title: 'Caveat Brush', 'Comic Sans MS', cursive, sans-serif;
+      --font-body: 'Itim', -apple-system, BlinkMacSystemFont, 'Segoe UI', cursive, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    input, textarea {
+      user-select: text;
+    }
+
+    body {
+      background-color: var(--bg-cream);
+      color: var(--ink);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-top: env(safe-area-inset-top, 0);
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+
+    /* Outer phone container simulation if viewed on desktop */
+    #app-container {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background-color: var(--bg-cream);
+      box-shadow: 0 0 20px rgba(0,0,0,0.06);
+    }
+
+    /* TOP HEADER */
+    header {
+      padding: 16px 16px 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background-color: var(--bg-cream);
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .paw-logo {
+      width: 26px;
+      height: 26px;
+      fill: var(--ink);
+    }
+
+    .brand h1 {
+      font-family: var(--font-title);
+      font-size: 28px;
+      line-height: 1;
+      letter-spacing: 0.5px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 50%;
+      color: var(--ink);
+      transition: transform 0.15s ease;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.9);
+    }
+
+    .icon-btn svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--ink);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    /* SEARCH BAR (EXPANDABLE) */
+    .search-container {
+      padding: 0 20px 10px 20px;
+      display: none;
+    }
+
+    .search-container.active {
+      display: block;
+      animation: slideDown 0.2s ease;
+    }
+
+    .search-box {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      background: #FFFFFF;
+      border: var(--border-thick);
+      border-radius: 16px;
+      padding: 8px 14px;
+      box-shadow: var(--shadow-sticker-sm);
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      width: 100%;
+      font-family: var(--font-body);
+      font-size: 16px;
+      color: var(--ink);
+      background: transparent;
+    }
+
+    /* CATEGORY NAV ROW */
+    .category-scroll {
+      display: flex;
+      gap: 10px;
+      padding: 6px 20px 14px 20px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .category-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .cat-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: var(--border-thick);
+      border-radius: 16px;
+      box-shadow: var(--shadow-sticker-sm);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      flex-shrink: 0;
+      height: 48px;
+    }
+
+    .cat-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 0 0 var(--ink);
+    }
+
+    .cat-btn.text-pill {
+      padding: 0 18px;
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #FFFFFF;
+      color: var(--ink);
+    }
+
+    .cat-btn.text-pill.active {
+      background-color: var(--ink);
+      color: var(--bg-cream);
+    }
+
+    .cat-btn.icon-square {
+      width: 48px;
+      padding: 6px;
+    }
+
+    .cat-btn.icon-square.active {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 0 var(--ink);
+      border-width: 3px;
+    }
+
+    .cat-btn[data-animal="dog"] { background-color: var(--dog-yellow); }
+    .cat-btn[data-animal="bunny"] { background-color: var(--bunny-pink); }
+    .cat-btn[data-animal="dino"] { background-color: var(--dino-mint); }
+    .cat-btn[data-animal="elephant"] { background-color: var(--elephant-blue); }
+    .cat-btn[data-animal="cat"] { background-color: var(--cat-orange); }
+
+    .cat-btn svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* NOTES GRID (MASONRY 2-COLUMN) */
+    .notes-container {
+      flex: 1;
+      padding: 6px 14px 120px 14px;
+      columns: 2;
+      column-gap: 12px;
+    }
+
+    .note-card {
+      break-inside: avoid;
+      margin-bottom: 12px;
+      border: var(--border-thick);
+      border-radius: 20px;
+      box-shadow: var(--shadow-sticker);
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      background-color: var(--dog-yellow);
+    }
+
+    .note-card:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 var(--ink);
+    }
+
+    .note-card.color-dog { background-color: var(--dog-yellow); }
+    .note-card.color-bunny { background-color: var(--bunny-pink); }
+    .note-card.color-dino { background-color: var(--dino-mint); }
+    .note-card.color-elephant { background-color: var(--elephant-blue); }
+    .note-card.color-cat { background-color: #FFFFFF; }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .card-animal-badge {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+    }
+
+    .card-animal-badge svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .card-title {
+      font-family: var(--font-title);
+      font-size: 19px;
+      line-height: 1.15;
+      color: var(--ink);
+      flex: 1;
+      word-break: break-word;
+    }
+
+    /* CARD CONTENT */
+    .card-body {
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      line-height: 1.3;
+      color: var(--ink);
+    }
+
+    .card-body p {
+      margin-bottom: 4px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* CHECKLIST IN CARD */
+    .checklist-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      cursor: pointer;
+    }
+
+    .check-box {
+      width: 17px;
+      height: 17px;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      background: transparent;
+      transition: all 0.15s ease;
+    }
+
+    .check-item.done .check-box {
+      background: var(--ink);
+    }
+
+    .check-box svg {
+      width: 11px;
+      height: 11px;
+      stroke: var(--bg-cream);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      display: none;
+    }
+
+    .check-item.done .check-box svg {
+      display: block;
+    }
+
+    .check-text {
+      font-family: var(--font-body);
+      font-size: 14.5px;
+      line-height: 1.25;
+      color: var(--ink);
+      transition: all 0.15s ease;
+      word-break: break-word;
+    }
+
+    .check-item.done .check-text {
+      text-decoration: line-through;
+      opacity: 0.65;
+    }
+
+    /* SPECIAL CARD: DAMJAR / CAT POST-IT STYLE */
+    .note-card.special-damjar {
+      background-color: var(--cat-orange);
+      padding: 10px;
+      position: relative;
+    }
+
+    .special-damjar .damjar-inner {
+      background: #FFFFFF;
+      border: 2px solid var(--ink);
+      border-radius: 14px;
+      min-height: 80px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-end;
+    }
+
+    .special-damjar .damjar-corner-cat {
+      width: 44px;
+      height: 44px;
+    }
+
+    /* FLOATING ACTION BUTTON (FAB) */
+    .fab-btn {
+      position: fixed;
+      bottom: 72px;
+      right: 20px;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background-color: var(--yellow-action);
+      border: var(--border-thick);
+      box-shadow: var(--shadow-sticker-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 30;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    @media (min-width: 441px) {
+      .fab-btn {
+        right: calc(50% - 190px);
+      }
+    }
+
+    .fab-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 var(--ink);
+    }
+
+    .fab-content {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .fab-plus {
+      font-family: var(--font-title);
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .fab-paw {
+      width: 18px;
+      height: 18px;
+      fill: var(--ink);
+    }
+
+    /* ADMOB BANNER AREA */
+    .admob-reserved-area {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      background: #FFFFFF;
+      border-top: var(--border-thick);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 25;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    .admob-placeholder {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #7A7571;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .ad-badge {
+      background: #EAE6DF;
+      border: 1.5px solid #8E8A85;
+      border-radius: 4px;
+      font-size: 10px;
+      padding: 1px 5px;
+      color: var(--ink);
+    }
+
+    /* NOTE EDITOR MODAL SHEET */
+    .editor-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 27, 26, 0.4);
+      z-index: 50;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .editor-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .editor-sheet {
+      width: 100%;
+      max-width: 440px;
+      height: 94vh;
+      background-color: var(--dino-mint);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      border-left: var(--border-thick);
+      border-right: var(--border-thick);
+      border-top: var(--border-thick);
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .editor-overlay.active .editor-sheet {
+      transform: translateY(0);
+    }
+
+    /* EDITOR TOOLBAR */
+    .editor-header {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid rgba(28, 27, 26, 0.1);
+    }
+
+    .editor-tools-left, .editor-tools-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .editor-tool-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      border-radius: 50%;
+      color: var(--ink);
+      transition: transform 0.15s ease;
+    }
+
+    .editor-tool-btn:active {
+      transform: scale(0.88);
+    }
+
+    .editor-tool-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--ink);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    /* THEME / ANIMAL SELECTOR BAR */
+    .editor-theme-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      background: rgba(255, 255, 255, 0.4);
+      border-bottom: 2px solid rgba(28, 27, 26, 0.1);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .theme-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: var(--border-thick);
+      box-shadow: var(--shadow-sticker-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.15s ease;
+    }
+
+    .theme-dot.selected {
+      transform: scale(1.15);
+      border-width: 3px;
+    }
+
+    .theme-dot svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* EDITOR CONTENT SCROLL */
+    .editor-content-scroll {
+      flex: 1;
+      padding: 18px 22px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .editor-top-area {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .editor-title-input {
+      font-family: var(--font-title);
+      font-size: 32px;
+      color: var(--ink);
+      border: none;
+      outline: none;
+      background: transparent;
+      width: 100%;
+      line-height: 1.15;
+    }
+
+    .editor-title-input::placeholder {
+      color: rgba(28, 27, 26, 0.35);
+    }
+
+    .editor-animal-mascot {
+      width: 72px;
+      height: 72px;
+      flex-shrink: 0;
+    }
+
+    .editor-animal-mascot svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* NOTEBOOK RULED LINES & CHECKLIST */
+    .editor-body-container {
+      position: relative;
+      min-height: 300px;
+    }
+
+    .editor-text-body {
+      width: 100%;
+      height: 100%;
+      min-height: 280px;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 18px;
+      line-height: 34px;
+      color: var(--ink);
+      resize: none;
+      background-image: repeating-linear-gradient(to bottom, transparent, transparent 32px, rgba(28, 27, 26, 0.15) 33px, transparent 34px);
+    }
+
+    .editor-checklist-body {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .editor-check-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0;
+      border-bottom: 1.5px solid rgba(28, 27, 26, 0.12);
+    }
+
+    .editor-check-square {
+      width: 22px;
+      height: 22px;
+      border: 2.2px solid var(--ink);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #FFFFFF;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .editor-check-item.done .editor-check-square {
+      background: var(--ink);
+    }
+
+    .editor-check-square svg {
+      width: 14px;
+      height: 14px;
+      stroke: #FFFFFF;
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      display: none;
+    }
+
+    .editor-check-item.done .editor-check-square svg {
+      display: block;
+    }
+
+    .editor-check-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 18px;
+      color: var(--ink);
+    }
+
+    .editor-check-item.done .editor-check-input {
+      text-decoration: line-through;
+      opacity: 0.55;
+    }
+
+    .remove-check-btn {
+      background: none;
+      border: none;
+      color: rgba(28, 27, 26, 0.4);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+
+    .add-check-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      color: rgba(28, 27, 26, 0.6);
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .add-check-plus {
+      width: 22px;
+      height: 22px;
+      border: 2px dashed var(--ink);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    /* SETTINGS MODAL */
+    .settings-sheet {
+      width: 100%;
+      max-width: 440px;
+      background-color: var(--bg-cream);
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      border: var(--border-thick);
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.15);
+      padding: 24px 20px 40px 20px;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .editor-overlay.settings-active .settings-sheet {
+      transform: translateY(0);
+    }
+
+    .settings-title {
+      font-family: var(--font-title);
+      font-size: 28px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .settings-item {
+      background: #FFFFFF;
+      border: var(--border-thick);
+      border-radius: 16px;
+      box-shadow: var(--shadow-sticker-sm);
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .settings-btn {
+      width: 100%;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--ink);
+      text-align: left;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .empty-mascot {
+      width: 90px;
+      height: 90px;
+      margin-bottom: 16px;
+      opacity: 0.8;
+    }
+
+    .empty-text {
+      font-family: var(--font-title);
+      font-size: 24px;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .empty-subtext {
+      font-size: 15px;
+      color: #7A7571;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  <!-- TOP HEADER -->
+  <header>
+    <div class="brand" onclick="filterCategory('all')">
+      <!-- PAW ICON SVG -->
+      <svg class="paw-logo" viewBox="0 0 64 64">
+        <!-- Main pad -->
+        <path d="M32 30 C20 30 16 42 20 54 C24 60 40 60 44 54 C48 42 44 30 32 30 Z" />
+        <!-- Toe 1 -->
+        <circle cx="14" cy="24" r="7" />
+        <!-- Toe 2 -->
+        <circle cx="26" cy="14" r="7.5" />
+        <!-- Toe 3 -->
+        <circle cx="38" cy="14" r="7.5" />
+        <!-- Toe 4 -->
+        <circle cx="50" cy="24" r="7" />
+      </svg>
+      <h1>Paw Note</h1>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleSearch()" title="Cari catatan">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16" y2="16"></line></svg>
+      </button>
+      <button class="icon-btn" onclick="openSettings()" title="Pengaturan">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- EXPANDABLE SEARCH BAR -->
+  <div class="search-container" id="search-bar">
+    <div class="search-box">
+      <input type="text" id="search-input" placeholder="Cari judul atau isi catatan..." oninput="handleSearch()">
+    </div>
+  </div>
+
+  <!-- HORIZONTALLY SCROLLABLE ANIMAL CATEGORY ROW -->
+  <div class="category-scroll">
+    <button class="cat-btn text-pill active" data-filter="all" onclick="filterCategory('all')">Semua</button>
+    
+    <!-- DOG CATEGORY BUTTON -->
+    <button class="cat-btn icon-square" data-animal="dog" data-filter="dog" onclick="filterCategory('dog')" title="Dog">
+      <svg viewBox="0 0 64 64">
+        <!-- Dog face -->
+        <path d="M12 28 C10 16 20 12 32 12 C44 12 54 16 52 28 C52 46 44 54 32 54 C20 54 12 46 12 28 Z" fill="#FFF0B3" stroke="#1C1B1A" stroke-width="3" stroke-linecap="round"/>
+        <!-- Floppy Ear Left -->
+        <path d="M14 20 C6 20 4 36 12 42 C16 45 20 38 18 28 Z" fill="#E6C875" stroke="#1C1B1A" stroke-width="3"/>
+        <!-- Floppy Ear Right -->
+        <path d="M50 20 C58 20 60 36 52 42 C48 45 44 38 46 28 Z" fill="#E6C875" stroke="#1C1B1A" stroke-width="3"/>
+        <!-- Eyes -->
+        <ellipse cx="26" cy="30" rx="3" ry="4" fill="#1C1B1A"/>
+        <ellipse cx="38" cy="30" rx="3" ry="4" fill="#1C1B1A"/>
+        <!-- Snout -->
+        <ellipse cx="32" cy="40" rx="8" ry="6" fill="#FFFFFF" stroke="#1C1B1A" stroke-width="2"/>
+        <!-- Nose -->
+        <polygon points="29,38 35,38 32,42" fill="#1C1B1A"/>
+        <!-- Mouth -->
+        <path d="M30 43 Q32 46 34 43" stroke="#1C1B1A" stroke-width="2" fill="none"/>
+      </svg>
+    </button>
+
+    <!-- BUNNY CATEGORY BUTTON -->
+    <button class="cat-btn icon-square" data-animal="bunny" data-filter="bunny" onclick="filterCategory('bunny')" title="Bunny">
+      <svg viewBox="0 0 64 64">
+        <!-- Bunny face -->
+        <circle cx="32" cy="40" r="17" fill="#FFD0DC" stroke="#1C1B1A" stroke-width="3"/>
+        <!-- Ear Left -->
+        <path d="M22 36 C18 16 26 8 27 12 C28 16 28 32 28 36 Z" fill="#FFD0DC" stroke="#1C1B1A" stroke-width="3"/>
+        <path d="M22 30 C20 20 24 14 25 16 C26 18 26 28 26 30 Z" fill="#FFB3C6"/>
+        <!-- Ear Right -->
+        <path d="M42 36 C46 16 38 8 37 12 C36 16 36 32 36 36 Z" fill="#FFD0DC" stroke="#1C1B1A" stroke-width="3"/>
+        <path d="M42 30 C44 20 40 14 39 16 C38 18 38 28 38 30 Z" fill="#FFB3C6"/>
+        <!-- Eyes -->
+        <circle cx="26" cy="40" r="2.5" fill="#1C1B1A"/>
+        <circle cx="38" cy="40" r="2.5" fill="#1C1B1A"/>
+        <!-- Nose -->
+        <ellipse cx="32" cy="44" rx="2" ry="1.5" fill="#E86C88"/>
+        <!-- Mouth -->
+        <path d="M30 47 Q32 49 34 47" stroke="#1C1B1A" stroke-width="2" fill="none"/>
+      </svg>
+    </button>
+
+    <!-- DINOSAUR CATEGORY BUTTON -->
+    <button class="cat-btn icon-square" data-animal="dino" data-filter="dino" onclick="filterCategory('dino')" title="Dino">
+      <svg viewBox="0 0 64 64">
+        <polygon points="26,14 22,10 26,18" fill="#7ECEAA" stroke="#1C1B1A" stroke-width="1.8"/>
+        <polygon points="22,22 16,18 21,26" fill="#7ECEAA" stroke="#1C1B1A" stroke-width="1.8"/>
+        <polygon points="18,30 12,28 17,34" fill="#7ECEAA" stroke="#1C1B1A" stroke-width="1.8"/>
+        <path d="M28 16 C36 14 44 16 46 22 C48 28 42 32 38 32 C38 34 42 36 44 42 C46 48 44 54 40 54 L36 54 C34 54 34 50 34 48 C32 50 30 54 26 54 L24 54 C22 54 22 48 24 46 C20 48 14 46 12 40 C14 36 18 34 20 30 C22 26 22 20 28 16 Z" fill="#BCE8D3" stroke="#1C1B1A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M30 34 Q38 36 36 46 Q28 48 26 40 Z" fill="#E0F7EB"/>
+        <path d="M35 34 C39 34 41 37 38 38" stroke="#1C1B1A" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <circle cx="38" cy="22" r="2.2" fill="#1C1B1A"/>
+        <circle cx="42" cy="26" r="2.5" fill="#FF8CA3" opacity="0.6"/>
+        <path d="M41 23 Q45 24 43 27" stroke="#1C1B1A" stroke-width="1.8" fill="none"/>
+      </svg>
+    </button>
+
+    <!-- ELEPHANT CATEGORY BUTTON -->
+    <button class="cat-btn icon-square" data-animal="elephant" data-filter="elephant" onclick="filterCategory('elephant')" title="Elephant">
+      <svg viewBox="0 0 64 64">
+        <path d="M16 44 C14 30 22 20 36 18 C46 18 52 24 52 32 C52 36 50 38 48 36 C48 32 46 28 44 28 C42 28 42 34 44 38 C44 42 42 48 38 48 L36 48 C34 48 34 44 34 40 C34 38 32 38 32 40 C32 44 30 48 26 48 L24 48 C22 48 20 44 20 42 C18 44 16 46 16 44 Z" fill="#C9E9F8" stroke="#1C1B1A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M30 22 C22 22 20 34 26 38 C32 41 34 34 32 24 Z" fill="#B0DBF2" stroke="#1C1B1A" stroke-width="2.2"/>
+        <path d="M48 34 Q54 36 52 40 Q48 42 46 37" fill="#C9E9F8" stroke="#1C1B1A" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="42" cy="26" r="2.2" fill="#1C1B1A"/>
+        <circle cx="40" cy="29" r="2.2" fill="#FFB3C6" opacity="0.6"/>
+      </svg>
+    </button>
+
+    <!-- CAT CATEGORY BUTTON -->
+    <button class="cat-btn icon-square" data-animal="cat" data-filter="cat" onclick="filterCategory('cat')" title="Cat">
+      <svg viewBox="0 0 64 64">
+        <!-- Cat ears -->
+        <polygon points="16,30 20,14 30,26" fill="#F8C28D" stroke="#1C1B1A" stroke-width="2.5"/>
+        <polygon points="48,30 44,14 34,26" fill="#F8C28D" stroke="#1C1B1A" stroke-width="2.5"/>
+        <!-- Cat head -->
+        <circle cx="32" cy="38" r="16" fill="#FFE6A5" stroke="#1C1B1A" stroke-width="3"/>
+        <!-- Eyes -->
+        <ellipse cx="26" cy="36" rx="2.5" ry="3" fill="#1C1B1A"/>
+        <ellipse cx="38" cy="36" rx="2.5" ry="3" fill="#1C1B1A"/>
+        <!-- Nose -->
+        <polygon points="31,41 33,41 32,43" fill="#E86C88"/>
+        <!-- Whiskers -->
+        <line x1="16" y1="38" x2="22" y2="39" stroke="#1C1B1A" stroke-width="2"/>
+        <line x1="16" y1="42" x2="22" y2="41" stroke="#1C1B1A" stroke-width="2"/>
+        <line x1="48" y1="38" x2="42" y2="39" stroke="#1C1B1A" stroke-width="2"/>
+        <line x1="48" y1="42" x2="42" y2="41" stroke="#1C1B1A" stroke-width="2"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- NOTES MASONRY GRID -->
+  <main class="notes-container" id="notes-grid">
+    <!-- Populated dynamically by JavaScript -->
+  </main>
+
+  <!-- EMPTY STATE (WHEN SEARCH OR FILTER HAS NO MATCH) -->
+  <div class="empty-state" id="empty-state">
+    <div class="empty-mascot">
+      <svg viewBox="0 0 64 64">
+        <circle cx="32" cy="34" r="22" fill="#FFF0B3" stroke="#1C1B1A" stroke-width="3"/>
+        <circle cx="24" cy="30" r="3" fill="#1C1B1A"/>
+        <circle cx="40" cy="30" r="3" fill="#1C1B1A"/>
+        <path d="M28 42 Q32 38 36 42" stroke="#1C1B1A" stroke-width="2.5" fill="none"/>
+      </svg>
+    </div>
+    <div class="empty-text">Belum ada catatan</div>
+    <div class="empty-subtext">Ketuk tombol + paw kuning untuk menulis catatan baru!</div>
+  </div>
+
+  <!-- FLOATING ACTION BUTTON (YELLOW CIRCLE WITH + AND PAW) -->
+  <button class="fab-btn" onclick="openNewNote()" title="Tambah Catatan">
+    <div class="fab-content">
+      <span class="fab-plus">+</span>
+      <svg class="fab-paw" viewBox="0 0 64 64">
+        <path d="M32 30 C20 30 16 42 20 54 C24 60 40 60 44 54 C48 42 44 30 32 30 Z" />
+        <circle cx="14" cy="24" r="6.5" />
+        <circle cx="26" cy="14" r="7" />
+        <circle cx="38" cy="14" r="7" />
+        <circle cx="50" cy="24" r="6.5" />
+      </svg>
+    </div>
+  </button>
+
+  <!-- DEDICATED ADMOB BANNER RESERVED AREA -->
+  <footer class="admob-reserved-area">
+    <div class="admob-placeholder">
+      <span class="ad-badge">AD</span>
+      <span>AdMob Banner (Google Test Ad Area)</span>
+    </div>
+  </footer>
+
+  <!-- NOTE EDITOR OVERLAY / SHEET -->
+  <div class="editor-overlay" id="editor-overlay" onclick="handleOverlayClick(event)">
+    <div class="editor-sheet" id="editor-sheet">
+      <!-- EDITOR HEADER TOOLBAR -->
+      <div class="editor-header">
+        <div class="editor-tools-left">
+          <button class="editor-tool-btn" onclick="closeEditor()" title="Kembali">
+            <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </button>
+        </div>
+        <div class="editor-tools-right">
+          <button class="editor-tool-btn" id="pin-toggle-btn" onclick="togglePinCurrentNote()" title="Sematkan / Pin Catatan">
+            <svg viewBox="0 0 24 24" id="pin-icon-svg"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-2l-2-2V5a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v8l-2 2v2z"></path></svg>
+          </button>
+          <button class="editor-tool-btn" onclick="toggleChecklistMode()" title="Mode Checklist / Teks" id="mode-toggle-btn">
+            <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          </button>
+          <button class="editor-tool-btn" onclick="deleteCurrentNote()" title="Hapus Catatan">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ANIMAL & COLOR SELECTOR ROW -->
+      <div class="editor-theme-row">
+        <div class="theme-dot" data-color="dog" style="background-color: var(--dog-yellow);" onclick="setEditorAnimal('dog')" title="Dog">
+          <svg viewBox="0 0 64 64"><path d="M12 28 C10 16 20 12 32 12 C44 12 54 16 52 28 C52 46 44 54 32 54 C20 54 12 46 12 28 Z" fill="#FFF0B3" stroke="#1C1B1A" stroke-width="3"/></svg>
+        </div>
+        <div class="theme-dot" data-color="bunny" style="background-color: var(--bunny-pink);" onclick="setEditorAnimal('bunny')" title="Bunny">
+          <svg viewBox="0 0 64 64"><circle cx="32" cy="40" r="17" fill="#FFD0DC" stroke="#1C1B1A" stroke-width="3"/></svg>
+        </div>
+        <div class="theme-dot" data-color="dino" style="background-color: var(--dino-mint);" onclick="setEditorAnimal('dino')" title="Dino">
+          <svg viewBox="0 0 64 64"><path d="M18 48 C16 36 18 20 30 16 C42 12 48 20 48 26 Z" fill="#BCE8D3" stroke="#1C1B1A" stroke-width="3"/></svg>
+        </div>
+        <div class="theme-dot" data-color="elephant" style="background-color: var(--elephant-blue);" onclick="setEditorAnimal('elephant')" title="Elephant">
+          <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="18" fill="#C9E9F8" stroke="#1C1B1A" stroke-width="3"/></svg>
+        </div>
+        <div class="theme-dot" data-color="cat" style="background-color: var(--cat-orange);" onclick="setEditorAnimal('cat')" title="Cat">
+          <svg viewBox="0 0 64 64"><circle cx="32" cy="38" r="16" fill="#FFE6A5" stroke="#1C1B1A" stroke-width="3"/></svg>
+        </div>
+      </div>
+
+      <!-- SCROLLABLE NOTE CONTENT -->
+      <div class="editor-content-scroll">
+        <div class="editor-top-area">
+          <input type="text" class="editor-title-input" id="editor-title" placeholder="Judul Catatan..." oninput="autoSaveNote()">
+          <div class="editor-animal-mascot" id="editor-mascot">
+            <!-- Injected dynamically -->
+          </div>
+        </div>
+
+        <div class="editor-body-container">
+          <!-- PLAIN TEXT MODE -->
+          <textarea class="editor-text-body" id="editor-text" placeholder="Tulis isi catatan di sini..." oninput="autoSaveNote()"></textarea>
+
+          <!-- CHECKLIST MODE -->
+          <div class="editor-checklist-body" id="editor-checklist" style="display: none;">
+            <div id="checklist-items-container"></div>
+            <div class="add-check-row" onclick="addChecklistItem()">
+              <div class="add-check-plus">+</div>
+              <span>Tambah item baru...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL SHEET -->
+  <div class="editor-overlay" id="settings-overlay" onclick="handleSettingsOverlayClick(event)">
+    <div class="settings-sheet">
+      <div class="settings-title">
+        <span>Pengaturan</span>
+        <button class="icon-btn" onclick="closeSettings()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+      </div>
+
+      <div class="settings-item">
+        <div>
+          <div style="font-weight: bold; font-size: 17px;">Paw Note</div>
+          <div style="font-size: 13px; color: #7A7571;">Versi 1.0.0 (Capacitor 8)</div>
+        </div>
+        <span style="font-size: 20px;">🐾</span>
+      </div>
+
+      <div class="settings-item">
+        <button class="settings-btn" onclick="exportNotesBackup()">💾 Cadangkan Catatan (Export JSON)</button>
+      </div>
+
+      <div class="settings-item">
+        <label class="settings-btn" style="cursor: pointer; display: block;">
+          📂 Pulihkan Catatan (Import JSON)
+          <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importNotesBackup(event)">
+        </label>
+      </div>
+
+      <div class="settings-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+        <div style="font-weight: bold; font-size: 15px;">Privasi & Offline-First</div>
+        <div style="font-size: 13px; color: #7A7571; line-height: 1.4;">
+          Semua catatan tersimpan 100% di perangkat Anda (IndexedDB lokal). Tidak memerlukan akun atau server cloud.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ANIMAL SVGs MAPPING (CUTE HAND-DRAWN STICKER STYLE MATCHING VIDEO)
+  const ANIMAL_SVGS = {
+    dog: `
+      <svg viewBox="0 0 64 64">
+        <!-- Dog head base -->
+        <path d="M16 28 C14 18 22 14 32 14 C42 14 50 18 48 28 C48 42 42 50 32 50 C22 50 16 42 16 28 Z" fill="#FFF0B3" stroke="#1C1B1A" stroke-width="2.6" stroke-linecap="round"/>
+        <!-- Floppy Ear Left -->
+        <path d="M18 20 C10 20 8 36 14 42 C18 45 22 40 20 28 Z" fill="#E6C875" stroke="#1C1B1A" stroke-width="2.6"/>
+        <!-- Floppy Ear Right -->
+        <path d="M46 20 C54 20 56 36 50 42 C46 45 42 40 44 28 Z" fill="#E6C875" stroke="#1C1B1A" stroke-width="2.6"/>
+        <!-- Eyes -->
+        <ellipse cx="27" cy="28" rx="2.5" ry="3.5" fill="#1C1B1A"/>
+        <ellipse cx="37" cy="28" rx="2.5" ry="3.5" fill="#1C1B1A"/>
+        <!-- Eye glints -->
+        <circle cx="26" cy="27" r="1" fill="#FFFFFF"/>
+        <circle cx="36" cy="27" r="1" fill="#FFFFFF"/>
+        <!-- White snout area -->
+        <ellipse cx="32" cy="38" rx="7.5" ry="5.5" fill="#FFFFFF" stroke="#1C1B1A" stroke-width="2"/>
+        <!-- Black cute nose -->
+        <ellipse cx="32" cy="36" rx="3" ry="2" fill="#1C1B1A"/>
+        <!-- Smile -->
+        <path d="M29 39 Q32 42 35 39" stroke="#1C1B1A" stroke-width="2" fill="none"/>
+      </svg>`,
+    bunny: `
+      <svg viewBox="0 0 64 64">
+        <!-- Ear Left -->
+        <path d="M22 34 C16 14 24 6 26 10 C28 14 28 30 28 34 Z" fill="#FFD0DC" stroke="#1C1B1A" stroke-width="2.6"/>
+        <path d="M22 28 C20 18 24 12 25 14 C26 16 26 26 26 28 Z" fill="#FFAEC3"/>
+        <!-- Ear Right -->
+        <path d="M42 34 C48 14 40 6 38 10 C36 14 36 30 36 34 Z" fill="#FFD0DC" stroke="#1C1B1A" stroke-width="2.6"/>
+        <path d="M42 28 C44 18 40 12 39 14 C38 16 38 26 38 28 Z" fill="#FFAEC3"/>
+        <!-- Head -->
+        <circle cx="32" cy="38" r="16" fill="#FFD0DC" stroke="#1C1B1A" stroke-width="2.6"/>
+        <!-- Eyes -->
+        <circle cx="26" cy="38" r="2.2" fill="#1C1B1A"/>
+        <circle cx="38" cy="38" r="2.2" fill="#1C1B1A"/>
+        <!-- Blush -->
+        <circle cx="23" cy="42" r="2.5" fill="#FF8CA3" opacity="0.6"/>
+        <circle cx="41" cy="42" r="2.5" fill="#FF8CA3" opacity="0.6"/>
+        <!-- Nose -->
+        <polygon points="30.5,41 33.5,41 32,43" fill="#E86C88"/>
+        <!-- Mouth -->
+        <path d="M30 44 Q32 46 34 44" stroke="#1C1B1A" stroke-width="1.8" fill="none"/>
+      </svg>`,
+    dino: `
+      <svg viewBox="0 0 64 64">
+        <!-- Full standing cute dinosaur matching video frame 001/016 -->
+        <!-- Spikes on back -->
+        <polygon points="26,14 22,10 26,18" fill="#7ECEAA" stroke="#1C1B1A" stroke-width="1.8"/>
+        <polygon points="22,22 16,18 21,26" fill="#7ECEAA" stroke="#1C1B1A" stroke-width="1.8"/>
+        <polygon points="18,30 12,28 17,34" fill="#7ECEAA" stroke="#1C1B1A" stroke-width="1.8"/>
+        <polygon points="14,38 8,38 14,43" fill="#7ECEAA" stroke="#1C1B1A" stroke-width="1.8"/>
+        <!-- Body: Head, tummy, tail, legs -->
+        <path d="M28 16 C36 14 44 16 46 22 C48 28 42 32 38 32 C38 34 42 36 44 42 C46 48 44 54 40 54 L36 54 C34 54 34 50 34 48 C32 50 30 54 26 54 L24 54 C22 54 22 48 24 46 C20 48 14 46 12 40 C14 36 18 34 20 30 C22 26 22 20 28 16 Z" fill="#BCE8D3" stroke="#1C1B1A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Round tummy patch -->
+        <path d="M30 34 Q38 36 36 46 Q28 48 26 40 Z" fill="#E0F7EB"/>
+        <!-- Tiny arm -->
+        <path d="M35 34 C39 34 41 37 38 38" stroke="#1C1B1A" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <!-- Eye -->
+        <circle cx="38" cy="22" r="2.2" fill="#1C1B1A"/>
+        <circle cx="37.5" cy="21.5" r="0.7" fill="#FFFFFF"/>
+        <!-- Blush -->
+        <circle cx="42" cy="26" r="2.5" fill="#FF8CA3" opacity="0.6"/>
+        <!-- Smile -->
+        <path d="M41 23 Q45 24 43 27" stroke="#1C1B1A" stroke-width="1.8" fill="none"/>
+      </svg>`,
+    elephant: `
+      <svg viewBox="0 0 64 64">
+        <!-- Full standing cute baby elephant matching video frame 001 -->
+        <!-- Body & legs -->
+        <path d="M16 44 C14 30 22 20 36 18 C46 18 52 24 52 32 C52 36 50 38 48 36 C48 32 46 28 44 28 C42 28 42 34 44 38 C44 42 42 48 38 48 L36 48 C34 48 34 44 34 40 C34 38 32 38 32 40 C32 44 30 48 26 48 L24 48 C22 48 20 44 20 42 C18 44 16 46 16 44 Z" fill="#C9E9F8" stroke="#1C1B1A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Floppy Ear -->
+        <path d="M30 22 C22 22 20 34 26 38 C32 41 34 34 32 24 Z" fill="#B0DBF2" stroke="#1C1B1A" stroke-width="2.2"/>
+        <!-- Trunk curving up -->
+        <path d="M48 34 Q54 36 52 40 Q48 42 46 37" fill="#C9E9F8" stroke="#1C1B1A" stroke-width="2" stroke-linecap="round"/>
+        <!-- Eye -->
+        <circle cx="42" cy="26" r="2.2" fill="#1C1B1A"/>
+        <circle cx="41.5" cy="25.5" r="0.7" fill="#FFFFFF"/>
+        <!-- Smile / blush -->
+        <circle cx="40" cy="29" r="2.2" fill="#FFB3C6" opacity="0.6"/>
+      </svg>`,
+    cat: `
+      <svg viewBox="0 0 64 64">
+        <!-- Cute Calico cat matching video frame 006 -->
+        <!-- Ears -->
+        <polygon points="18,28 22,14 30,24" fill="#F8C28D" stroke="#1C1B1A" stroke-width="2.2"/>
+        <polygon points="46,28 42,14 34,24" fill="#6B625B" stroke="#1C1B1A" stroke-width="2.2"/>
+        <!-- Body & head -->
+        <path d="M20 34 C18 24 24 22 32 22 C40 22 46 24 44 34 C44 44 42 52 32 52 C22 52 20 44 20 34 Z" fill="#FFFFFF" stroke="#1C1B1A" stroke-width="2.6"/>
+        <!-- Ginger patch on right face -->
+        <path d="M34 22 Q42 22 43 32 Q36 34 34 22 Z" fill="#F8C28D"/>
+        <!-- Dark patch on left cheek -->
+        <path d="M21 32 Q20 40 25 42 Q25 34 21 32 Z" fill="#6B625B"/>
+        <!-- Eyes -->
+        <ellipse cx="27" cy="32" rx="2.2" ry="2.8" fill="#1C1B1A"/>
+        <ellipse cx="37" cy="32" rx="2.2" ry="2.8" fill="#1C1B1A"/>
+        <!-- Nose -->
+        <polygon points="31,36 33,36 32,38" fill="#E86C88"/>
+        <!-- Whiskers -->
+        <line x1="16" y1="34" x2="22" y2="35" stroke="#1C1B1A" stroke-width="1.8"/>
+        <line x1="16" y1="38" x2="22" y2="37" stroke="#1C1B1A" stroke-width="1.8"/>
+        <line x1="48" y1="34" x2="42" y2="35" stroke="#1C1B1A" stroke-width="1.8"/>
+        <line x1="48" y1="38" x2="42" y2="37" stroke="#1C1B1A" stroke-width="1.8"/>
+        <!-- Cute tail curving -->
+        <path d="M42 46 Q48 44 46 38" stroke="#1C1B1A" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+      </svg>`
+  };
+
+  // INITIAL SAMPLE DATA MATCHING THE ORIGINAL GEMINI VIDEO & SCREENSHOT
+  const INITIAL_SAMPLE_NOTES = [
+    {
+      id: "note-1",
+      title: "Belanja Pasar",
+      animal: "dog",
+      color: "dog",
+      type: "checklist",
+      items: [
+        { text: "Oat milk", done: true },
+        { text: "Kopi beans", done: true },
+        { text: "Apel fuji", done: false }
+      ],
+      updatedAt: Date.now() - 1000 * 60 * 30
+    },
+    {
+      id: "note-2",
+      title: "Secret Wishlist",
+      animal: "bunny",
+      color: "bunny",
+      type: "text",
+      content: "Beli mechanical keyboard warna pastel pink!",
+      updatedAt: Date.now() - 1000 * 60 * 60
+    },
+    {
+      id: "note-3",
+      title: "Workout Rutin",
+      animal: "dino",
+      color: "dino",
+      type: "checklist",
+      items: [
+        { text: "Stretching 10m", done: false },
+        { text: "Push-up 3x15", done: false }
+      ],
+      updatedAt: Date.now() - 1000 * 60 * 120
+    },
+    {
+      id: "note-4",
+      title: "Bayar Tagihan",
+      animal: "elephant",
+      color: "elephant",
+      type: "text",
+      content: "• Bayar sebelum tanggal 10!",
+      updatedAt: Date.now() - 1000 * 60 * 180
+    },
+    {
+      id: "note-5",
+      title: "Damjar",
+      animal: "cat",
+      color: "cat",
+      type: "special-damjar",
+      content: "",
+      updatedAt: Date.now() - 1000 * 60 * 240
+    },
+    {
+      id: "note-6",
+      title: "Beli Hadiah",
+      animal: "bunny",
+      color: "bunny",
+      type: "checklist",
+      items: [
+        { text: "Hadiah mama", done: true },
+        { text: "Kartu ucapan", done: false }
+      ],
+      updatedAt: Date.now() - 1000 * 60 * 300
+    }
+  ];
+
+  // STATE MANAGEMENT
+  let notes = [];
+  let currentFilter = 'all';
+  let searchQuery = '';
+  let activeNote = null;
+  let autoSaveTimeout = null;
+  let dbInstance = null;
+
+  // INDEXEDDB ENGINE
+  const DB_NAME = 'PawNoteDB';
+  const DB_VERSION = 1;
+  const STORE_NAME = 'notes';
+
+  function openIndexedDB() {
+    return new Promise((resolve, reject) => {
+      if (!('indexedDB' in window)) {
+        return reject(new Error('IndexedDB not supported'));
+      }
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          store.createIndex('updatedAt', 'updatedAt', { unique: false });
+          store.createIndex('animal', 'animal', { unique: false });
+          store.createIndex('pinned', 'pinned', { unique: false });
+        }
+      };
+      req.onsuccess = (e) => resolve(e.target.result);
+      req.onerror = (e) => reject(e.target.error);
+    });
+  }
+
+  async function idbGetAll() {
+    if (!dbInstance) dbInstance = await openIndexedDB();
+    return new Promise((resolve, reject) => {
+      const tx = dbInstance.transaction(STORE_NAME, 'readonly');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function idbPut(note) {
+    if (!dbInstance) dbInstance = await openIndexedDB();
+    return new Promise((resolve, reject) => {
+      const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.put(note);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function idbDelete(id) {
+    if (!dbInstance) dbInstance = await openIndexedDB();
+    return new Promise((resolve, reject) => {
+      const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function idbBulkPut(notesList) {
+    if (!dbInstance) dbInstance = await openIndexedDB();
+    return new Promise((resolve, reject) => {
+      const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      for (const item of notesList) {
+        store.put(item);
+      }
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  // INITIALIZE NOTES FROM INDEXEDDB (WITH LOCALSTORAGE FALLBACK)
+  async function initNotes() {
+    try {
+      const loaded = await idbGetAll();
+      if (loaded && loaded.length > 0) {
+        notes = loaded;
+      } else {
+        // First launch: Seed initial sample notes
+        notes = INITIAL_SAMPLE_NOTES;
+        await idbBulkPut(notes);
+      }
+    } catch (err) {
+      console.warn('IndexedDB unavailable, falling back to LocalStorage:', err);
+      const saved = localStorage.getItem('paw_notes_data');
+      if (saved) {
+        try { notes = JSON.parse(saved); } catch (e) { notes = INITIAL_SAMPLE_NOTES; }
+      } else {
+        notes = INITIAL_SAMPLE_NOTES;
+        localStorage.setItem('paw_notes_data', JSON.stringify(notes));
+      }
+    }
+    sortNotes();
+    renderNotes();
+    initCapacitorAndAdMob();
+  }
+
+  function sortNotes() {
+    notes.sort((a, b) => {
+      const pinA = a.pinned ? 1 : 0;
+      const pinB = b.pinned ? 1 : 0;
+      if (pinA !== pinB) return pinB - pinA;
+      return (b.updatedAt || 0) - (a.updatedAt || 0);
+    });
+  }
+
+  async function saveNoteToStorage(note) {
+    try {
+      await idbPut(note);
+    } catch (e) {
+      // LocalStorage fallback
+      localStorage.setItem('paw_notes_data', JSON.stringify(notes));
+    }
+  }
+
+  async function deleteNoteFromStorage(id) {
+    try {
+      await idbDelete(id);
+    } catch (e) {
+      localStorage.setItem('paw_notes_data', JSON.stringify(notes));
+    }
+  }
+
+  // RENDER NOTES GRID
+  function renderNotes() {
+    const grid = document.getElementById('notes-grid');
+    const emptyState = document.getElementById('empty-state');
+    
+    let filtered = notes.filter(n => {
+      const matchFilter = (currentFilter === 'all') || (n.animal === currentFilter);
+      let matchSearch = true;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const inTitle = (n.title || '').toLowerCase().includes(q);
+        let inContent = false;
+        if (n.type === 'text') {
+          inContent = (n.content || '').toLowerCase().includes(q);
+        } else if (n.items) {
+          inContent = n.items.some(item => (item.text || '').toLowerCase().includes(q));
+        }
+        matchSearch = inTitle || inContent;
+      }
+      return matchFilter && matchSearch;
+    });
+
+    if (filtered.length === 0) {
+      grid.innerHTML = '';
+      emptyState.style.display = 'flex';
+      return;
+    }
+
+    emptyState.style.display = 'none';
+
+    grid.innerHTML = filtered.map(note => {
+      const badgeSvg = ANIMAL_SVGS[note.animal] || ANIMAL_SVGS.dog;
+      const pinBadge = note.pinned ? `<span style="font-size: 14px; margin-right: 4px;" title="Disematkan">📌</span>` : '';
+      
+      if (note.type === 'special-damjar') {
+        return `
+          <div class="note-card special-damjar" onclick="openNote('${note.id}')">
+            <div class="card-top">
+              ${pinBadge}
+              <span class="card-title">${escapeHtml(note.title || 'Catatan')}</span>
+            </div>
+            <div class="damjar-inner">
+              <div class="damjar-corner-cat">${badgeSvg}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      let bodyHtml = '';
+      if (note.type === 'checklist' && note.items) {
+        bodyHtml = `
+          <div class="checklist-list">
+            ${note.items.slice(0, 5).map((item, idx) => `
+              <div class="check-item ${item.done ? 'done' : ''}" onclick="toggleCardCheckItem(event, '${note.id}', ${idx})">
+                <div class="check-box">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <span class="check-text">${escapeHtml(item.text)}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        bodyHtml = `
+          <div class="card-body">
+            <p>${escapeHtml(note.content || '')}</p>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="note-card color-${note.color || 'dog'}" onclick="openNote('${note.id}')">
+          <div class="card-top">
+            <div class="card-animal-badge">${badgeSvg}</div>
+            <div class="card-title">${pinBadge}${escapeHtml(note.title || 'Tanpa Judul')}</div>
+          </div>
+          ${bodyHtml}
+        </div>
+      `;
+    }).join('');
+  }
+
+  // CATEGORY FILTERING
+  function filterCategory(cat) {
+    currentFilter = cat;
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+      if (btn.dataset.filter === cat) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+    renderNotes();
+  }
+
+  // SEARCH HANDLING
+  function toggleSearch() {
+    const bar = document.getElementById('search-bar');
+    bar.classList.toggle('active');
+    if (bar.classList.contains('active')) {
+      document.getElementById('search-input').focus();
+    } else {
+      searchQuery = '';
+      document.getElementById('search-input').value = '';
+      renderNotes();
+    }
+  }
+
+  function handleSearch() {
+    searchQuery = document.getElementById('search-input').value;
+    renderNotes();
+  }
+
+  // TOGGLE CHECKBOX DIRECTLY ON CARD
+  async function toggleCardCheckItem(event, noteId, itemIdx) {
+    event.stopPropagation();
+    const note = notes.find(n => n.id === noteId);
+    if (note && note.items && note.items[itemIdx]) {
+      note.items[itemIdx].done = !note.items[itemIdx].done;
+      note.updatedAt = Date.now();
+      await saveNoteToStorage(note);
+      sortNotes();
+      renderNotes();
+    }
+  }
+
+  // NOTE EDITOR OPERATIONS
+  function openNewNote() {
+    activeNote = {
+      id: 'note-' + Date.now(),
+      title: '',
+      animal: currentFilter !== 'all' ? currentFilter : 'dino',
+      color: currentFilter !== 'all' ? currentFilter : 'dino',
+      type: 'checklist',
+      items: [{ text: '', done: false }],
+      content: '',
+      pinned: false,
+      updatedAt: Date.now()
+    };
+    showEditor();
+  }
+
+  function openNote(noteId) {
+    const found = notes.find(n => n.id === noteId);
+    if (!found) return;
+    activeNote = JSON.parse(JSON.stringify(found));
+    showEditor();
+  }
+
+  function showEditor() {
+    if (!activeNote) return;
+    const overlay = document.getElementById('editor-overlay');
+    
+    // 1. Title
+    document.getElementById('editor-title').value = activeNote.title || '';
+
+    // 2. Content
+    const isChecklist = activeNote.type === 'checklist';
+    document.getElementById('editor-text').style.display = isChecklist ? 'none' : 'block';
+    document.getElementById('editor-checklist').style.display = isChecklist ? 'block' : 'none';
+    
+    if (isChecklist) {
+      renderEditorChecklist();
+    } else {
+      document.getElementById('editor-text').value = activeNote.content || '';
+    }
+
+    // 3. Animal & Color
+    setEditorAnimal(activeNote.animal || 'dino', false);
+
+    // 4. Pin status
+    updateEditorPinUI();
+
+    overlay.classList.add('active');
+  }
+
+  function updateEditorPinUI() {
+    const btn = document.getElementById('pin-toggle-btn');
+    if (btn) {
+      if (activeNote && activeNote.pinned) {
+        btn.style.opacity = '1';
+        btn.style.color = '#E86C88';
+      } else {
+        btn.style.opacity = '0.6';
+        btn.style.color = 'var(--ink)';
+      }
+    }
+  }
+
+  function togglePinCurrentNote() {
+    if (!activeNote) return;
+    activeNote.pinned = !activeNote.pinned;
+    updateEditorPinUI();
+    autoSaveNote();
+  }
+
+  function setEditorAnimal(animal, shouldAutosave = true) {
+    if (!activeNote) return;
+    activeNote.animal = animal;
+    activeNote.color = animal;
+
+    const colors = {
+      dog: 'var(--dog-yellow)',
+      bunny: 'var(--bunny-pink)',
+      dino: 'var(--dino-mint)',
+      elephant: 'var(--elephant-blue)',
+      cat: 'var(--cat-orange)'
+    };
+    document.getElementById('editor-sheet').style.backgroundColor = colors[animal] || 'var(--dino-mint)';
+    document.getElementById('editor-mascot').innerHTML = ANIMAL_SVGS[animal] || ANIMAL_SVGS.dino;
+
+    document.querySelectorAll('.theme-dot').forEach(dot => {
+      if (dot.dataset.color === animal) {
+        dot.classList.add('selected');
+      } else {
+        dot.classList.remove('selected');
+      }
+    });
+    if (shouldAutosave) {
+      autoSaveNote();
+    }
+  }
+
+  function toggleChecklistMode() {
+    if (!activeNote) return;
+    if (activeNote.type === 'checklist') {
+      const text = (activeNote.items || []).map(i => (i.done ? '[x] ' : '[ ] ') + i.text).join('\n');
+      activeNote.content = text;
+      activeNote.type = 'text';
+      document.getElementById('editor-text').value = text;
+      document.getElementById('editor-text').style.display = 'block';
+      document.getElementById('editor-checklist').style.display = 'none';
+    } else {
+      const lines = (document.getElementById('editor-text').value || '').split('\n').filter(l => l.trim().length > 0);
+      activeNote.items = lines.map(line => {
+        let done = false;
+        let text = line;
+        if (line.startsWith('[x] ') || line.startsWith('[X] ')) {
+          done = true; text = line.slice(4);
+        } else if (line.startsWith('[ ] ')) {
+          text = line.slice(4);
+        } else if (line.startsWith('• ') || line.startsWith('- ')) {
+          text = line.slice(2);
+        }
+        return { text, done };
+      });
+      if (activeNote.items.length === 0) {
+        activeNote.items = [{ text: '', done: false }];
+      }
+      activeNote.type = 'checklist';
+      document.getElementById('editor-text').style.display = 'none';
+      document.getElementById('editor-checklist').style.display = 'block';
+      renderEditorChecklist();
+    }
+    autoSaveNote();
+  }
+
+  function renderEditorChecklist() {
+    const container = document.getElementById('checklist-items-container');
+    if (!activeNote || !activeNote.items) return;
+
+    container.innerHTML = activeNote.items.map((item, idx) => `
+      <div class="editor-check-item ${item.done ? 'done' : ''}">
+        <div class="editor-check-square" onclick="toggleEditorItemDone(${idx})">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <input type="text" class="editor-check-input" value="${escapeHtml(item.text)}" placeholder="Ketik item..." oninput="updateEditorItemText(${idx}, this.value)" onkeydown="handleChecklistKeyDown(event, ${idx})">
+        <button class="remove-check-btn" onclick="removeEditorItem(${idx})">×</button>
+      </div>
+    `).join('');
+  }
+
+  function handleChecklistKeyDown(event, idx) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      addChecklistItem();
+    }
+  }
+
+  function toggleEditorItemDone(idx) {
+    if (activeNote && activeNote.items[idx]) {
+      activeNote.items[idx].done = !activeNote.items[idx].done;
+      renderEditorChecklist();
+      autoSaveNote();
+    }
+  }
+
+  function updateEditorItemText(idx, val) {
+    if (activeNote && activeNote.items[idx]) {
+      activeNote.items[idx].text = val;
+      autoSaveNote();
+    }
+  }
+
+  function addChecklistItem() {
+    if (!activeNote) return;
+    if (!activeNote.items) activeNote.items = [];
+    activeNote.items.push({ text: '', done: false });
+    renderEditorChecklist();
+    setTimeout(() => {
+      const inputs = document.querySelectorAll('.editor-check-input');
+      if (inputs.length > 0) inputs[inputs.length - 1].focus();
+    }, 50);
+  }
+
+  function removeEditorItem(idx) {
+    if (activeNote && activeNote.items) {
+      activeNote.items.splice(idx, 1);
+      renderEditorChecklist();
+      autoSaveNote();
+    }
+  }
+
+  function autoSaveNote() {
+    if (!activeNote) return;
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+      persistCurrentNote();
+    }, 250);
+  }
+
+  async function persistCurrentNote() {
+    if (!activeNote) return;
+    activeNote.title = document.getElementById('editor-title').value.trim();
+    if (activeNote.type === 'text') {
+      activeNote.content = document.getElementById('editor-text').value;
+    }
+    activeNote.updatedAt = Date.now();
+
+    const hasTitle = !!activeNote.title;
+    const hasContent = activeNote.type === 'text' 
+      ? !!activeNote.content.trim() 
+      : (activeNote.items && activeNote.items.some(i => i.text.trim()));
+
+    if (!hasTitle && !hasContent) {
+      // Don't save blank notes
+      return;
+    }
+
+    const existingIndex = notes.findIndex(n => n.id === activeNote.id);
+    if (existingIndex >= 0) {
+      notes[existingIndex] = { ...activeNote };
+    } else {
+      notes.unshift({ ...activeNote });
+    }
+
+    await saveNoteToStorage(activeNote);
+    sortNotes();
+    renderNotes();
+  }
+
+  async function closeEditor() {
+    clearTimeout(autoSaveTimeout);
+    await persistCurrentNote();
+    document.getElementById('editor-overlay').classList.remove('active');
+    activeNote = null;
+  }
+
+  async function deleteCurrentNote() {
+    if (!activeNote) return;
+    if (confirm('Hapus catatan ini?')) {
+      const idToDelete = activeNote.id;
+      notes = notes.filter(n => n.id !== idToDelete);
+      await deleteNoteFromStorage(idToDelete);
+      sortNotes();
+      renderNotes();
+      document.getElementById('editor-overlay').classList.remove('active');
+      activeNote = null;
+    }
+  }
+
+  function handleOverlayClick(event) {
+    if (event.target.id === 'editor-overlay') {
+      closeEditor();
+    }
+  }
+
+  // SETTINGS MODAL
+  function openSettings() {
+    document.getElementById('settings-overlay').classList.add('settings-active');
+    document.getElementById('settings-overlay').classList.add('active');
+  }
+
+  function closeSettings() {
+    document.getElementById('settings-overlay').classList.remove('settings-active');
+    document.getElementById('settings-overlay').classList.remove('active');
+  }
+
+  function handleSettingsOverlayClick(event) {
+    if (event.target.id === 'settings-overlay') {
+      closeSettings();
+    }
+  }
+
+  function exportNotesBackup() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notes, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", `PawNote_Backup_${new Date().toISOString().slice(0,10)}.json`);
+    dlAnchorElem.click();
+  }
+
+  function importNotesBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if (Array.isArray(imported)) {
+          notes = imported;
+          await idbBulkPut(notes);
+          sortNotes();
+          renderNotes();
+          alert('Berhasil memulihkan ' + imported.length + ' catatan!');
+          closeSettings();
+        } else {
+          alert('Format berkas tidak valid.');
+        }
+      } catch (err) {
+        alert('Gagal membaca berkas cadangan.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // CAPACITOR & ADMOB INITIALIZATION
+  function initCapacitorAndAdMob() {
+    // 1. Lifecycle flush
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && activeNote) {
+        persistCurrentNote();
+      }
+    });
+    window.addEventListener('beforeunload', () => {
+      if (activeNote) {
+        persistCurrentNote();
+      }
+    });
+
+    // 2. Native Capacitor App & Hardware Back Button
+    if (window.Capacitor && window.Capacitor.Plugins) {
+      const { App, AdMob } = window.Capacitor.Plugins;
+
+      if (App) {
+        App.addListener('backButton', () => {
+          if (document.getElementById('editor-overlay').classList.contains('active')) {
+            closeEditor();
+          } else if (document.getElementById('settings-overlay').classList.contains('active')) {
+            closeSettings();
+          } else if (document.getElementById('search-bar').classList.contains('active')) {
+            toggleSearch();
+          } else {
+            App.exitApp();
+          }
+        });
+      }
+
+      // 3. AdMob Banner (Google official test IDs only)
+      if (AdMob) {
+        AdMob.initialize({
+          requestTrackingAuthorization: false,
+          testingDevices: ['EMULATOR'],
+          initializeForTesting: true
+        }).then(() => {
+          return AdMob.showBanner({
+            adId: 'ca-app-pub-3940256099942544/6300978111', // Google Test Banner ID
+            adSize: 'BANNER',
+            position: 'BOTTOM_CENTER',
+            margin: 0,
+            isTesting: true
+          });
+        }).catch(err => {
+          // Graceful handling: note interface stays fully functional
+          console.log('AdMob test banner notice:', err);
+        });
+      }
+    }
+  }
+
+  // UTILITY
+  function escapeHtml(text) {
+    if (!text) return '';
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // BOOTSTRAP
+  window.addEventListener('DOMContentLoaded', () => {
+    initNotes();
+  });
+</script>
+</body>
+</html>
