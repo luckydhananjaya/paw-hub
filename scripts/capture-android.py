@@ -17,12 +17,22 @@ def tree():
 def find(label):
     for _ in range(20):
         doc = tree()
+        if any(n.get("text") == "Pixel Launcher isn't responding" for n in doc.iter("node")):
+            close = next((n for n in doc.iter("node") if n.get("text") == "Close app"), None)
+            if close is not None:
+                b = list(map(int, re.findall(r"\d+", close.get("bounds", ""))))
+                adb("shell", "input", "tap", str((b[0]+b[2])//2), str((b[1]+b[3])//2))
+                adb("shell", "am", "start", "-W", "-n", "com.luckydhananjaya.pawnote/.MainActivity")
+                time.sleep(3)
+                continue
         for node in doc.iter("node"):
             if label in (node.get("text", ""), node.get("content-desc", "")):
                 bounds = list(map(int, re.findall(r"\d+", node.get("bounds", ""))))
                 if len(bounds) == 4 and bounds[2] > bounds[0] and bounds[3] > bounds[1]:
                     return bounds
         time.sleep(1)
+    screenshot("diagnostic-timeout.png")
+    (OUT / "logcat.txt").write_text(adb("logcat", "-d", "-t", "600"))
     raise RuntimeError("UI element not found: " + label)
 
 def tap(label):
@@ -35,7 +45,9 @@ def screenshot(name):
 
 adb("shell", "wm", "size", "1080x1920")
 adb("shell", "wm", "density", "420")
-adb("shell", "am", "start", "-n", "com.luckydhananjaya.pawnote/.MainActivity")
+adb("shell", "input", "keyevent", "82")
+time.sleep(5)
+adb("shell", "am", "start", "-W", "-n", "com.luckydhananjaya.pawnote/.MainActivity")
 find("Grocery shopping")
 time.sleep(3)
 screenshot("01-notes-home.png")
