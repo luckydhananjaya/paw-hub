@@ -56,5 +56,17 @@ def android():
         ImageDraw.Draw(rd).ellipse([0, 0, n * 4 - 1, n * 4 - 1], fill=YEL)
         rd = rd.resize((n, n), Image.LANCZOS); rd.alpha_composite(paw(n, 0.66)); rd.save(d + 'ic_launcher_round.png')
 
+    import json, re
+    if os.path.exists('package.json') and os.path.exists('android/app/build.gradle'):
+        pkg = json.load(open('package.json'))
+        v_name = pkg.get('version', '1.0.0')
+        version_map = {'1.0.0': 1, '1.0.1': 2, '1.0.2': 3, '1.0.3': 4, '1.0.4': 5}
+        v_code = version_map.get(v_name, 2)
+        bg = open('android/app/build.gradle').read()
+        bg = re.sub(r'versionCode \d+', f'versionCode {v_code}', bg)
+        bg = re.sub(r'versionName "[^"]+"', f'versionName "{v_name}"', bg)
+        open('android/app/build.gradle', 'w').write(bg)
+        print(f'Synced Android version: {v_name} (versionCode: {v_code})')
+
 {'fonts': fonts, 'android': android}[sys.argv[1]]()
 print('done:', sys.argv[1])
