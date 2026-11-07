@@ -57,16 +57,36 @@ def android():
         rd = rd.resize((n, n), Image.LANCZOS); rd.alpha_composite(paw(n, 0.66)); rd.save(d + 'ic_launcher_round.png')
 
     import json, re
-    if os.path.exists('package.json') and os.path.exists('android/app/build.gradle'):
-        pkg = json.load(open('package.json'))
-        v_name = pkg.get('version', '1.0.0')
-        version_map = {'1.0.0': 1, '1.0.1': 2, '1.0.2': 3, '1.0.3': 4, '1.0.4': 5}
-        v_code = version_map.get(v_name, 2)
+    if os.path.exists('android/app/build.gradle'):
         bg = open('android/app/build.gradle').read()
+        cur_code_m = re.search(r'versionCode (\d+)', bg)
+        cur_code = int(cur_code_m.group(1)) if cur_code_m else 1
+
+        v_name = None
+        v_code = None
+
+        if os.path.exists('package.json'):
+            pkg = json.load(open('package.json'))
+            v_name = pkg.get('version')
+            v_code = pkg.get('versionCode') or pkg.get('androidVersionCode')
+
+        # Environment variable override takes highest precedence
+        if os.environ.get('VERSION_CODE'):
+            try:
+                v_code = int(os.environ['VERSION_CODE'])
+            except ValueError:
+                pass
+
+        if v_code is None:
+            # Respect existing versionCode in build.gradle if not explicitly set
+            v_code = cur_code
+
+        if v_name:
+            bg = re.sub(r'versionName "[^"]+"', f'versionName "{v_name}"', bg)
         bg = re.sub(r'versionCode \d+', f'versionCode {v_code}', bg)
-        bg = re.sub(r'versionName "[^"]+"', f'versionName "{v_name}"', bg)
+
         open('android/app/build.gradle', 'w').write(bg)
-        print(f'Synced Android version: {v_name} (versionCode: {v_code})')
+        print(f'Synced Android version: {v_name or "unchanged"} (versionCode: {v_code})')
 
 {'fonts': fonts, 'android': android}[sys.argv[1]]()
 print('done:', sys.argv[1])

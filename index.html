@@ -1119,7 +1119,7 @@
           <!-- NOTE TIMESTAMP FOOTER -->
           <div class="editor-meta-footer">
             <svg viewBox="0 0 24 24" class="editor-meta-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            <span id="editor-timestamp-text">Baru saja</span>
+            <span id="editor-timestamp-text">Just now</span>
           </div>
         </div>
       </div>
@@ -1564,20 +1564,20 @@
 
   // TIMESTAMP FORMATTER
   function formatTimestamp(timestamp) {
-    if (!timestamp) return 'Baru saja';
+    if (!timestamp) return 'Just now';
     try {
       const d = new Date(timestamp);
-      if (isNaN(d.getTime())) return 'Baru saja';
+      if (isNaN(d.getTime())) return 'Just now';
       const now = new Date();
       const isToday = d.toDateString() === now.toDateString();
       const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       if (isToday) {
-        return `Hari ini pukul ${timeStr}`;
+        return `Today at ${timeStr}`;
       }
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       return `${d.getDate()} ${months[d.getMonth()]}, ${timeStr}`;
     } catch (e) {
-      return 'Baru saja';
+      return 'Just now';
     }
   }
 
@@ -1585,7 +1585,7 @@
     const el = document.getElementById('editor-timestamp-text');
     if (!el || !activeNote) return;
     const timeInfo = formatTimestamp(activeNote.updatedAt || activeNote.createdAt || Date.now());
-    el.textContent = `Diedit: ${timeInfo}`;
+    el.textContent = `Edited: ${timeInfo}`;
   }
 
   // CATEGORY FILTERING
