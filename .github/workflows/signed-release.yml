@@ -3,14 +3,18 @@ on:
   workflow_dispatch:
     inputs:
       version_name:
-        description: 'Version name (for example 1.0.0)'
+        description: 'Version name (for example 1.0.1)'
         required: true
-        default: '1.0.0'
+        default: '1.0.1'
+      version_code:
+        description: 'Version code (must be > 1001, for example 1002)'
+        required: false
+        default: '1002'
 permissions:
   contents: read
 jobs:
   release:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')
     runs-on: ubuntu-latest
     environment: android-release
     env:
@@ -30,7 +34,16 @@ jobs:
               exit 1
             fi
           done
-          echo "PAW_VERSION_CODE=$((1000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+          if [ -n "${{ inputs.version_code }}" ]; then
+            V_CODE="${{ inputs.version_code }}"
+          else
+            V_CODE="$((1000 + GITHUB_RUN_NUMBER))"
+          fi
+          if [ "$V_CODE" -le 1001 ]; then
+            echo "::error::versionCode ($V_CODE) must be strictly greater than last uploaded versionCode 1001"
+            exit 1
+          fi
+          echo "PAW_VERSION_CODE=$V_CODE" >> "$GITHUB_ENV"
           echo "PAW_KEYSTORE_PATH=$RUNNER_TEMP/paw-upload.jks" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:

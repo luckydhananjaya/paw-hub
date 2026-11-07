@@ -70,5 +70,47 @@ public class MainActivity extends BridgeActivity {
         ImageDraw.Draw(rd).ellipse([0, 0, n * 4 - 1, n * 4 - 1], fill=YEL)
         rd = rd.resize((n, n), Image.LANCZOS); rd.alpha_composite(paw(n, 0.66)); rd.save(d + 'ic_launcher_round.png')
 
+    import json, re
+    if os.path.exists('android/app/build.gradle'):
+        bg = open('android/app/build.gradle').read()
+        cur_code_m = re.search(r'versionCode (\d+)', bg)
+        cur_code = int(cur_code_m.group(1)) if cur_code_m else 1002
+
+        v_name = None
+        v_code = None
+
+        if os.path.exists('package.json'):
+            pkg = json.load(open('package.json'))
+            v_name = pkg.get('version')
+            v_code = pkg.get('versionCode') or pkg.get('androidVersionCode')
+
+        # Environment variable override takes highest precedence
+        env_code = os.environ.get('VERSION_CODE') or os.environ.get('PAW_VERSION_CODE')
+        if env_code:
+            try:
+                v_code = int(env_code)
+            except ValueError:
+                raise ValueError(f"Invalid versionCode in environment: {env_code}")
+
+        if v_code is None:
+            v_code = cur_code
+
+        # Strict validation: Play Console previously accepted versionCode 1001
+        # Any new release build MUST be strictly > 1001 and <= 2100000000
+        LAST_ACCEPTED_VERSION_CODE = 1001
+        if not isinstance(v_code, int) or v_code <= LAST_ACCEPTED_VERSION_CODE or v_code > 2100000000:
+            raise ValueError(
+                f"Invalid versionCode {v_code}: must be an integer strictly greater than "
+                f"the last uploaded Play Console versionCode ({LAST_ACCEPTED_VERSION_CODE}) "
+                f"and <= 2100000000."
+            )
+
+        if v_name:
+            bg = re.sub(r'versionName "[^"]+"', f'versionName "{v_name}"', bg)
+        bg = re.sub(r'versionCode \d+', f'versionCode {v_code}', bg)
+
+        open('android/app/build.gradle', 'w').write(bg)
+        print(f'Synced Android version: {v_name or "unchanged"} (versionCode: {v_code})')
+
 {'fonts': fonts, 'android': android}[sys.argv[1]]()
 print('done:', sys.argv[1])

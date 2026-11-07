@@ -169,6 +169,24 @@
       background: transparent;
     }
 
+    .search-clear-btn {
+      background: none;
+      border: none;
+      font-size: 15px;
+      font-weight: bold;
+      color: #9E9893;
+      padding: 0 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .search-clear-btn:active {
+      color: var(--ink);
+    }
+
     /* CATEGORY NAV ROW */
     .category-scroll {
       display: flex;
@@ -760,6 +778,27 @@
       font-weight: bold;
     }
 
+    .editor-meta-footer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 24px;
+      padding: 10px 4px 20px 4px;
+      font-size: 13px;
+      color: rgba(28, 27, 26, 0.5);
+      font-family: var(--font-body);
+    }
+
+    .editor-meta-icon {
+      width: 14px;
+      height: 14px;
+      stroke: rgba(28, 27, 26, 0.5);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
     /* SETTINGS MODAL */
     .settings-sheet {
       width: 100%;
@@ -874,6 +913,7 @@
   <div class="search-container" id="search-bar">
     <div class="search-box">
       <input type="text" id="search-input" placeholder="Search notes..." oninput="handleSearch()">
+      <button type="button" id="search-clear-btn" class="search-clear-btn" onclick="clearSearch()" style="display: none;" title="Clear search">✕</button>
     </div>
   </div>
 
@@ -1075,6 +1115,12 @@
               <span>Add item...</span>
             </div>
           </div>
+
+          <!-- NOTE TIMESTAMP FOOTER -->
+          <div class="editor-meta-footer">
+            <svg viewBox="0 0 24 24" class="editor-meta-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span id="editor-timestamp-text">Just now</span>
+          </div>
         </div>
       </div>
     </div>
@@ -1091,7 +1137,7 @@
       <div class="settings-item">
         <div>
           <div style="font-weight: bold; font-size: 17px;">Paw Note</div>
-          <div style="font-size: 13px; color: #7A7571;">Version 1.0.0 (Capacitor 8)</div>
+          <div style="font-size: 13px; color: #7A7571;">Version 1.0.1 (Capacitor 8)</div>
         </div>
         <span style="font-size: 20px;">🐾</span>
       </div>
@@ -1747,40 +1793,99 @@
     }).join('');
   }
 
+  // HAPTIC FEEDBACK (GENTLE VIBRATION)
+  function triggerHaptic(duration = 15) {
+    try {
+      if (window.navigator && typeof window.navigator.vibrate === 'function') {
+        window.navigator.vibrate(duration);
+      }
+    } catch (e) {}
+  }
+
+  // TIMESTAMP FORMATTER (ENGLISH)
+  function formatTimestamp(timestamp) {
+    if (!timestamp) return 'Just now';
+    try {
+      const d = new Date(timestamp);
+      if (isNaN(d.getTime())) return 'Just now';
+      const now = new Date();
+      const isToday = d.toDateString() === now.toDateString();
+      const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (isToday) {
+        return `Today at ${timeStr}`;
+      }
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${d.getDate()} ${months[d.getMonth()]}, ${timeStr}`;
+    } catch (e) {
+      return 'Just now';
+    }
+  }
+
+  function updateEditorTimestampUI() {
+    const el = document.getElementById('editor-timestamp-text');
+    if (!el || !activeNote) return;
+    const timeInfo = formatTimestamp(activeNote.updatedAt || activeNote.createdAt || Date.now());
+    el.textContent = `Edited: ${timeInfo}`;
+  }
+
   // CATEGORY FILTERING
   function filterCategory(cat) {
+    triggerHaptic(12);
     currentFilter = cat;
     document.querySelectorAll('.cat-btn').forEach(btn => {
       if (btn.dataset.filter === cat) {
         btn.classList.add('active');
+        btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
       } else {
         btn.classList.remove('active');
       }
     });
     renderNotes();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // SEARCH HANDLING
   function toggleSearch() {
+    triggerHaptic(10);
     const bar = document.getElementById('search-bar');
     bar.classList.toggle('active');
     if (bar.classList.contains('active')) {
       document.getElementById('search-input').focus();
     } else {
       searchQuery = '';
-      document.getElementById('search-input').value = '';
+      const input = document.getElementById('search-input');
+      if (input) input.value = '';
+      const clearBtn = document.getElementById('search-clear-btn');
+      if (clearBtn) clearBtn.style.display = 'none';
       renderNotes();
     }
   }
 
   function handleSearch() {
-    searchQuery = document.getElementById('search-input').value;
+    const input = document.getElementById('search-input');
+    searchQuery = input.value;
+    const clearBtn = document.getElementById('search-clear-btn');
+    if (clearBtn) {
+      clearBtn.style.display = searchQuery.trim().length > 0 ? 'flex' : 'none';
+    }
     renderNotes();
+  }
+
+  function clearSearch() {
+    triggerHaptic(10);
+    const input = document.getElementById('search-input');
+    if (input) input.value = '';
+    searchQuery = '';
+    const clearBtn = document.getElementById('search-clear-btn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    renderNotes();
+    if (input) input.focus();
   }
 
   // TOGGLE CHECKBOX DIRECTLY ON CARD
   async function toggleCardCheckItem(event, noteId, itemIdx) {
     event.stopPropagation();
+    triggerHaptic(20);
     const note = notes.find(n => n.id === noteId);
     if (note && note.items && note.items[itemIdx]) {
       note.items[itemIdx].done = !note.items[itemIdx].done;
@@ -1793,6 +1898,7 @@
 
   // NOTE EDITOR OPERATIONS
   function openNewNote() {
+    triggerHaptic(15);
     activeNote = {
       id: 'note-' + Date.now(),
       title: '',
@@ -1838,6 +1944,9 @@
     // 4. Pin status
     updateEditorPinUI();
 
+    // 5. Timestamp status
+    updateEditorTimestampUI();
+
     overlay.classList.add('active');
   }
 
@@ -1856,6 +1965,7 @@
 
   function togglePinCurrentNote() {
     if (!activeNote) return;
+    triggerHaptic(15);
     activeNote.pinned = !activeNote.pinned;
     updateEditorPinUI();
     autoSaveNote();
@@ -1946,6 +2056,7 @@
 
   function toggleEditorItemDone(idx) {
     if (activeNote && activeNote.items[idx]) {
+      triggerHaptic(20);
       activeNote.items[idx].done = !activeNote.items[idx].done;
       renderEditorChecklist();
       autoSaveNote();
@@ -2014,6 +2125,7 @@
     await saveNoteToStorage(activeNote);
     sortNotes();
     renderNotes();
+    updateEditorTimestampUI();
   }
 
   async function closeEditor() {
