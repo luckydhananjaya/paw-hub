@@ -30,16 +30,19 @@ def android():
         open(p, 'w').write(s)
     open(main + 'res/values/ic_launcher_background.xml', 'w').write(
         '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#FFD84D</color>\n</resources>\n')
-    # Install the app-local Storage Access Framework plugin.
+    # Install the app-local Storage Access Framework and Play Review plugins.
     package_dir = main + 'java/com/luckydhananjaya/pawnote/'
     os.makedirs(package_dir, exist_ok=True)
     shutil.copy('native/PawBackupPlugin.java', package_dir + 'PawBackupPlugin.java')
+    if os.path.exists('native/PawReviewPlugin.java'):
+        shutil.copy('native/PawReviewPlugin.java', package_dir + 'PawReviewPlugin.java')
     open(package_dir + 'MainActivity.java', 'w').write("""package com.luckydhananjaya.pawnote;
 import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override public void onCreate(Bundle savedInstanceState) {
         registerPlugin(PawBackupPlugin.class);
+        registerPlugin(PawReviewPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }
@@ -74,7 +77,10 @@ public class MainActivity extends BridgeActivity {
     if os.path.exists('android/app/build.gradle'):
         bg = open('android/app/build.gradle').read()
         cur_code_m = re.search(r'versionCode (\d+)', bg)
-        cur_code = int(cur_code_m.group(1)) if cur_code_m else 1002
+        cur_code = int(cur_code_m.group(1)) if cur_code_m else 1003
+
+        if 'com.google.android.play:review' not in bg:
+            bg = bg.replace('dependencies {', "dependencies {\n    implementation 'com.google.android.play:review:2.0.2'")
 
         v_name = None
         v_code = None
@@ -95,9 +101,9 @@ public class MainActivity extends BridgeActivity {
         if v_code is None:
             v_code = cur_code
 
-        # Strict validation: Play Console previously accepted versionCode 1001
-        # Any new release build MUST be strictly > 1001 and <= 2100000000
-        LAST_ACCEPTED_VERSION_CODE = 1001
+        # Strict validation: Play Console previously accepted versionCode 1002
+        # Any new release build MUST be strictly > 1002 and <= 2100000000
+        LAST_ACCEPTED_VERSION_CODE = 1002
         if not isinstance(v_code, int) or v_code <= LAST_ACCEPTED_VERSION_CODE or v_code > 2100000000:
             raise ValueError(
                 f"Invalid versionCode {v_code}: must be an integer strictly greater than "

@@ -876,6 +876,239 @@
       font-size: 15px;
       color: #7A7571;
     }
+
+    /* APPEARANCE / DARK MODE */
+    [data-theme="dark"] body,
+    body[data-theme="dark"] {
+      background-color: #1A1918;
+      color: #F5F2EB;
+    }
+
+    [data-theme="dark"] #app-container {
+      background-color: #1A1918;
+    }
+
+    [data-theme="dark"] header {
+      background-color: #1A1918;
+    }
+
+    [data-theme="dark"] .brand h1 {
+      color: #F5F2EB;
+    }
+
+    [data-theme="dark"] .paw-logo {
+      fill: var(--yellow-action);
+    }
+
+    [data-theme="dark"] header .icon-btn svg {
+      stroke: #F5F2EB;
+    }
+
+    [data-theme="dark"] .search-box {
+      background: #252422;
+      border-color: #3E3B37;
+      box-shadow: 0 2px 0 #000000;
+    }
+
+    [data-theme="dark"] .search-box input {
+      color: #F5F2EB;
+    }
+
+    [data-theme="dark"] .search-box input::placeholder {
+      color: #8E8A85;
+    }
+
+    [data-theme="dark"] .search-clear-btn {
+      color: #8E8A85;
+    }
+
+    [data-theme="dark"] .cat-btn.text-pill {
+      background-color: #252422;
+      color: #F5F2EB;
+      border-color: #3E3B37;
+      box-shadow: 0 2px 0 #000000;
+    }
+
+    [data-theme="dark"] .cat-btn.text-pill.active {
+      background-color: var(--yellow-action);
+      color: #1C1B1A;
+      border-color: #1C1B1A;
+      box-shadow: 0 2px 0 #000000;
+    }
+
+    /* Note cards remain pastel sticker-like with crisp ink-black text */
+    [data-theme="dark"] .note-card {
+      border-color: #1C1B1A;
+      box-shadow: 0 3px 0 #000000;
+      color: #1C1B1A;
+    }
+
+    [data-theme="dark"] .note-card.color-cat {
+      background-color: #FFF5DE;
+    }
+
+    [data-theme="dark"] .empty-text {
+      color: #F5F2EB;
+    }
+
+    [data-theme="dark"] .empty-subtext {
+      color: #A8A39D;
+    }
+
+    [data-theme="dark"] .settings-sheet {
+      background-color: #201F1D;
+      border-color: #3E3B37;
+      color: #F5F2EB;
+    }
+
+    [data-theme="dark"] .settings-title {
+      color: #F5F2EB;
+    }
+
+    [data-theme="dark"] .settings-title .icon-btn svg {
+      stroke: #F5F2EB;
+    }
+
+    [data-theme="dark"] .settings-item {
+      background: #282624;
+      border-color: #3E3B37;
+      box-shadow: 0 2px 0 #000000;
+      color: #F5F2EB;
+    }
+
+    [data-theme="dark"] .settings-btn {
+      color: #F5F2EB;
+    }
+
+    [data-theme="dark"] .text-muted {
+      color: #A8A39D !important;
+    }
+
+    [data-theme="dark"] .admob-reserved-area {
+      background: #201F1D;
+      border-top-color: #3E3B37;
+    }
+
+    [data-theme="dark"] .admob-placeholder {
+      color: #A8A39D;
+    }
+
+    [data-theme="dark"] .ad-badge {
+      background: #2E2C29;
+      border-color: #4A4641;
+      color: #F5F2EB;
+    }
+
+    /* APPEARANCE SELECTOR */
+    .appearance-selector {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .appearance-btn {
+      flex: 1;
+      padding: 9px 4px;
+      border-radius: 12px;
+      border: 2px solid var(--ink);
+      background: #FFFFFF;
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+      text-align: center;
+    }
+
+    .appearance-btn.active {
+      background: var(--yellow-action);
+      box-shadow: 0 2px 0 var(--ink);
+      font-weight: bold;
+    }
+
+    [data-theme="dark"] .appearance-btn {
+      background: #1E1D1B;
+      border-color: #3E3B37;
+      color: #F5F2EB;
+    }
+
+    [data-theme="dark"] .appearance-btn.active {
+      background: var(--yellow-action);
+      border-color: #1C1B1A;
+      color: #1C1B1A;
+      box-shadow: 0 2px 0 #000000;
+      font-weight: bold;
+    }
+
+    /* SCROLLABLE SHEETS & QUICK HELP */
+    .settings-sheet {
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+
+    .help-sheet {
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+
+    .help-tip {
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed #DDD8CE;
+    }
+
+    .help-tip:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    [data-theme="dark"] .help-tip {
+      border-bottom-color: #3E3B37;
+    }
+
+    .help-tip-title {
+      font-weight: bold;
+      font-size: 15px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .help-tip-body {
+      font-size: 13.5px;
+      line-height: 1.4;
+      color: #55514E;
+    }
+
+    [data-theme="dark"] .help-tip-body {
+      color: #B5B0A9;
+    }
+
+    [data-theme="dark"] dialog {
+      background: #201F1D !important;
+      border-color: #3E3B37 !important;
+      color: #F5F2EB !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important;
+    }
+
+    [data-theme="dark"] dialog button {
+      background: #2A2826 !important;
+      color: #F5F2EB !important;
+      border-color: #3E3B37 !important;
+    }
+
+    [data-theme="dark"] dialog h2,
+    [data-theme="dark"] dialog h3 {
+      color: #F5F2EB !important;
+    }
+
+    [data-theme="dark"] dialog p {
+      color: #A8A39D !important;
+    }
   </style>
 </head>
 <body>
@@ -1137,15 +1370,28 @@
       <div class="settings-item">
         <div>
           <div style="font-weight: bold; font-size: 17px;">Paw Note</div>
-          <div style="font-size: 13px; color: #7A7571;">Version 1.0.1 (Capacitor 8)</div>
+          <div style="font-size: 13px; color: #7A7571;" class="text-muted">Version 1.0.2 (Capacitor 8)</div>
         </div>
         <span style="font-size: 20px;">🐾</span>
+      </div>
+
+      <!-- Appearance Mode -->
+      <div class="settings-item" style="flex-direction: column; align-items: stretch; gap: 4px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: bold; font-size: 15px;">Appearance</span>
+          <span id="appearance-current-icon" style="font-size: 16px;">🌓</span>
+        </div>
+        <div class="appearance-selector">
+          <button type="button" class="appearance-btn" data-mode="system" onclick="setAppearanceMode('system')">Follow system</button>
+          <button type="button" class="appearance-btn" data-mode="light" onclick="setAppearanceMode('light')">Light</button>
+          <button type="button" class="appearance-btn" data-mode="dark" onclick="setAppearanceMode('dark')">Dark</button>
+        </div>
       </div>
 
       <div class="settings-item">
         <div style="width:100%;">
           <button class="settings-btn" onclick="backupToFolder()">Backup</button>
-          <p id="folder-backup-status" style="font-size:13px;margin-top:8px;">Choose a folder once to enable automatic backups.</p>
+          <p id="folder-backup-status" class="text-muted" style="font-size:13px;margin-top:8px;">Choose a folder once to enable automatic backups.</p>
         </div>
       </div>
 
@@ -1155,21 +1401,205 @@
       <div class="settings-item">
         <button class="settings-btn" onclick="changeBackupFolder()">Choose backup folder</button>
       </div>
+
+      <!-- Quick Help -->
+      <div class="settings-item">
+        <button class="settings-btn" onclick="openHowToUse()">How to use Paw Note</button>
+      </div>
+
+      <!-- Feedback & Rate -->
+      <div class="settings-item">
+        <button class="settings-btn" onclick="openFeedbackEmail()">Send feedback</button>
+      </div>
+      <div class="settings-item">
+        <button class="settings-btn" onclick="openPlayStoreListing()">Rate Paw Note</button>
+      </div>
+
       <div class="settings-item">
         <a class="settings-btn" href="privacy.html">Privacy policy</a>
         <a class="settings-btn" href="https://github.com/luckydhananjaya/paw-hub/issues">Support</a>
       </div>
       <div class="settings-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
         <div style="font-weight: bold; font-size: 15px;">Privacy & offline access</div>
-        <div style="font-size: 13px; color: #7A7571; line-height: 1.4;">
-          Notes are stored on this device. Folder backups survive uninstall if you keep the selected folder. After reinstalling, tap Restore and select that folder again. Cloud folders depend on your storage provider; a local folder does not protect against losing your phone.
+        <div style="font-size: 13px; color: #7A7571; line-height: 1.4;" class="text-muted">
+          Notes are stored on this device. Folder backups survive uninstall if you keep the selected folder. After reinstalling, choose the SAME backup folder to restore. Cloud folders depend on your storage provider; a local folder does not protect against losing your phone.
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW TO USE MODAL SHEET -->
+  <div class="editor-overlay" id="help-overlay" onclick="handleHelpOverlayClick(event)">
+    <div class="settings-sheet help-sheet">
+      <div class="settings-title">
+        <span>How to Use Paw Note</span>
+        <button class="icon-btn" onclick="closeHowToUse()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+      </div>
+
+      <div class="settings-item" style="flex-direction: column; align-items: stretch;">
+        <div class="help-tip">
+          <div class="help-tip-title">📝 Offline Notes</div>
+          <div class="help-tip-body">All your notes are stored locally on your device. Works completely offline with zero sign-in or account required.</div>
+        </div>
+        <div class="help-tip">
+          <div class="help-tip-title">✅ Checklists</div>
+          <div class="help-tip-body">Switch notes to checklist mode for to-do items and grocery lists. Tap any task to check or uncheck it.</div>
+        </div>
+        <div class="help-tip">
+          <div class="help-tip-title">🔍 Search & Filter</div>
+          <div class="help-tip-body">Tap the search icon in the header to search note titles and content instantly. Tap the animal chips below to filter notes.</div>
+        </div>
+        <div class="help-tip">
+          <div class="help-tip-title">📌 Pinning</div>
+          <div class="help-tip-body">Pin your top priority notes to keep them anchored at the top of your screen.</div>
+        </div>
+        <div class="help-tip">
+          <div class="help-tip-title">🎨 Cute Animal Themes</div>
+          <div class="help-tip-body">Choose from 5 adorable animal themes (Dog, Bunny, Dino, Elephant, Cat). Customize Appearance in Settings with Light, Dark, or System mode.</div>
+        </div>
+        <div class="help-tip">
+          <div class="help-tip-title">💾 Backup & Restore</div>
+          <div class="help-tip-body">Set a backup folder in Settings to save your notes. <strong>Important:</strong> After reinstalling the app, choose the <strong>SAME backup folder</strong> to restore your notes!</div>
+        </div>
+      </div>
+
+      <div class="settings-item" style="justify-content: center;">
+        <button class="settings-btn" style="text-align: center; color: var(--ink); font-weight: bold;" onclick="closeHowToUse()">Got it!</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+  // APPEARANCE & THEME (Light / Dark / Follow system)
+  const APPEARANCE_STORAGE_KEY = 'paw_appearance_mode';
+
+  function getAppearanceMode() {
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage.getItem) {
+        const val = localStorage.getItem(APPEARANCE_STORAGE_KEY);
+        if (val === 'light' || val === 'dark' || val === 'system') return val;
+      }
+    } catch (e) {}
+    return 'system';
+  }
+
+  function resolveEffectiveTheme(mode) {
+    if (mode === 'dark' || mode === 'light') return mode;
+    try {
+      if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+    } catch (e) {}
+    return 'light';
+  }
+
+  function applyTheme(mode) {
+    const effective = resolveEffectiveTheme(mode || getAppearanceMode());
+    if (typeof document !== 'undefined' && document.documentElement) {
+      if (effective === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if (document.body) document.body.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        if (document.body) document.body.removeAttribute('data-theme');
+      }
+    }
+  }
+
+  // Early theme apply
+  try { applyTheme(getAppearanceMode()); } catch (e) {}
+
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    try {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      const listener = () => {
+        if (getAppearanceMode() === 'system') applyTheme('system');
+      };
+      if (mq.addEventListener) mq.addEventListener('change', listener);
+      else if (mq.addListener) mq.addListener(listener);
+    } catch (e) {}
+  }
+
+  function setAppearanceMode(mode) {
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage.setItem) {
+        localStorage.setItem(APPEARANCE_STORAGE_KEY, mode);
+      }
+    } catch (e) {}
+    applyTheme(mode);
+    updateAppearanceUI();
+  }
+
+  function updateAppearanceUI() {
+    if (typeof document === 'undefined' || !document.querySelectorAll) return;
+    const mode = getAppearanceMode();
+    document.querySelectorAll('.appearance-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+    });
+    const iconEl = document.getElementById('appearance-current-icon');
+    if (iconEl) {
+      iconEl.textContent = mode === 'dark' ? '🌙' : (mode === 'light' ? '☀️' : '🌓');
+    }
+  }
+
+  // ACTIVE DAYS TRACKING (for review qualification)
+  function trackActiveDay() {
+    try {
+      if (typeof localStorage === 'undefined' || !localStorage.getItem) return;
+      const today = new Date().toISOString().slice(0, 10);
+      const raw = localStorage.getItem('paw_active_days');
+      let days = [];
+      if (raw) {
+        try { days = JSON.parse(raw); } catch (e) {}
+      }
+      if (!Array.isArray(days)) days = [];
+      if (!days.includes(today)) {
+        days.push(today);
+        if (days.length > 30) days = days.slice(-30);
+        localStorage.setItem('paw_active_days', JSON.stringify(days));
+      }
+    } catch (e) {}
+  }
+
+  // PLAY REVIEW PLUGIN BRIDGE
+  function reviewPlugin() {
+    const cap = typeof window !== 'undefined' ? window.Capacitor : null;
+    if (!cap || !cap.isNativePlatform || !cap.isNativePlatform() || typeof cap.nativePromise !== 'function') {
+      return {
+        requestReview: async () => {}
+      };
+    }
+    return {
+      requestReview: () => cap.nativePromise('PawReview', 'requestReview', {})
+    };
+  }
+
+  // IN-APP REVIEW PROMPT (Natural moment, strictly un-gated)
+  async function maybePromptInAppReview() {
+    try {
+      if (typeof localStorage === 'undefined' || !localStorage.getItem) return;
+      // 1. Must have at least 5 notes
+      if (!Array.isArray(notes) || notes.length < 5) return;
+
+      // 2. Must have at least 3 distinct active days
+      const rawDays = localStorage.getItem('paw_active_days');
+      const days = rawDays ? JSON.parse(rawDays) : [];
+      if (!Array.isArray(days) || days.length < 3) return;
+
+      // 3. Must respect 30-day quota interval
+      const lastPrompt = parseInt(localStorage.getItem('paw_review_last_prompt_time') || '0', 10);
+      const now = Date.now();
+      const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+      if (now - lastPrompt < THIRTY_DAYS) return;
+
+      localStorage.setItem('paw_review_last_prompt_time', String(now));
+      await reviewPlugin().requestReview();
+    } catch (e) {
+      // Fail silently
+    }
+  }
+
   // ANIMAL SVGs MAPPING (CUTE HAND-DRAWN STICKER STYLE MATCHING VIDEO)
   const ANIMAL_SVGS = {
     dog: `
@@ -2133,6 +2563,7 @@
     await persistCurrentNote();
     document.getElementById('editor-overlay').classList.remove('active');
     activeNote = null;
+    maybePromptInAppReview();
   }
 
   async function deleteCurrentNote() {
@@ -2160,6 +2591,7 @@
   function openSettings() {
     const time = localStorage.getItem('paw_folder_backup_time');
     backupStatus(time ? 'Last backup: ' + time : 'Choose a folder once to enable automatic backups.');
+    updateAppearanceUI();
     document.getElementById('settings-overlay').classList.add('settings-active');
     document.getElementById('settings-overlay').classList.add('active');
   }
@@ -2172,6 +2604,55 @@
   function handleSettingsOverlayClick(event) {
     if (event.target.id === 'settings-overlay') {
       closeSettings();
+    }
+  }
+
+  // HOW TO USE MODAL
+  function openHowToUse() {
+    const overlay = document.getElementById('help-overlay');
+    if (overlay) {
+      overlay.classList.add('settings-active');
+      overlay.classList.add('active');
+    }
+  }
+
+  function closeHowToUse() {
+    const overlay = document.getElementById('help-overlay');
+    if (overlay) {
+      overlay.classList.remove('settings-active');
+      overlay.classList.remove('active');
+    }
+  }
+
+  function handleHelpOverlayClick(event) {
+    if (event.target && event.target.id === 'help-overlay') {
+      closeHowToUse();
+    }
+  }
+
+  // SEND FEEDBACK
+  function openFeedbackEmail() {
+    const email = 'luckydhananjaya@gmail.com';
+    const subject = encodeURIComponent('Paw Note Feedback (v1.0.2)');
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown';
+    const body = encodeURIComponent(
+      '\n\n---\nApp Version: 1.0.2 (versionCode 1003)\nDevice: ' + ua + '\n'
+    );
+    window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
+  }
+
+  // NEUTRAL RATE PAW NOTE ITEM
+  function openPlayStoreListing() {
+    const pkg = 'com.luckydhananjaya.pawnote';
+    const marketUri = 'market://details?id=' + pkg;
+    const webUri = 'https://play.google.com/store/apps/details?id=' + pkg;
+    try {
+      window.location.href = marketUri;
+      setTimeout(() => {
+        try { window.open(webUri, '_blank'); } catch (e) {}
+      }, 500);
+    } catch (e) {
+      try { window.open(webUri, '_blank'); } catch (err) {}
     }
   }
 
@@ -2302,6 +2783,8 @@
         App.addListener('backButton', () => {
           if (document.getElementById('editor-overlay').classList.contains('active')) {
             closeEditor();
+          } else if (document.getElementById('help-overlay') && document.getElementById('help-overlay').classList.contains('active')) {
+            closeHowToUse();
           } else if (document.getElementById('settings-overlay').classList.contains('active')) {
             closeSettings();
           } else if (document.getElementById('search-bar').classList.contains('active')) {
@@ -2347,6 +2830,8 @@
 
   // BOOTSTRAP
   window.addEventListener('DOMContentLoaded', () => {
+    trackActiveDay();
+    updateAppearanceUI();
     initNotes();
   });
 </script>

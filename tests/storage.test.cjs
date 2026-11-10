@@ -91,3 +91,49 @@ test('Android backup bridge uses nativePromise for every method', async () => {
   assert.deepEqual(calls.map(c => c.slice(0,2)),
     ['status','chooseFolder','write','list','read'].map(m => ['PawBackup',m]));
 });
+
+test('Appearance mode defaults to system and persists choices', () => {
+  const {run, context} = harness();
+  assert.equal(run('getAppearanceMode()'), 'system');
+  run("setAppearanceMode('dark')");
+  assert.equal(run('getAppearanceMode()'), 'dark');
+  run("setAppearanceMode('light')");
+  assert.equal(run('getAppearanceMode()'), 'light');
+});
+
+test('PawReview bridge invokes native PawReview.requestReview', async () => {
+  const {context, run} = harness();
+  const calls = [];
+  context.window.Capacitor = {isNativePlatform: () => true,
+    nativePromise: async (...args) => calls.push(args)};
+  await run('reviewPlugin().requestReview()');
+  assert.deepEqual(calls.map(c => c.slice(0,2)), [['PawReview', 'requestReview']]);
+});
+
+test('In-app review prompt respects qualification rules and quota', async () => {
+  const {context, run} = harness();
+  let requested = false;
+  context.reviewPlugin = () => ({ requestReview: async () => { requested = true; } });
+
+  // 1. Fewer than 5 notes: no prompt
+  run("notes = [{id:1},{id:2},{id:3},{id:4}]");
+  run("localStorage.setItem('paw_active_days', JSON.stringify(['2026-11-01','2026-11-02','2026-11-03']))");
+  await run('maybePromptInAppReview()');
+  assert.equal(requested, false);
+
+  // 2. 5 notes but fewer than 3 active days: no prompt
+  run("notes = [{id:1},{id:2},{id:3},{id:4},{id:5}]");
+  run("localStorage.setItem('paw_active_days', JSON.stringify(['2026-11-01','2026-11-02']))");
+  await run('maybePromptInAppReview()');
+  assert.equal(requested, false);
+
+  // 3. 5 notes and 3 days: prompts!
+  run("localStorage.setItem('paw_active_days', JSON.stringify(['2026-11-01','2026-11-02','2026-11-03']))");
+  await run('maybePromptInAppReview()');
+  assert.equal(requested, true);
+
+  // 4. Repeated prompt within 30 days is blocked by quota
+  requested = false;
+  await run('maybePromptInAppReview()');
+  assert.equal(requested, false);
+});
