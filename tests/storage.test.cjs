@@ -137,3 +137,87 @@ test('In-app review prompt respects qualification rules and quota', async () => 
   await run('maybePromptInAppReview()');
   assert.equal(requested, false);
 });
+
+test('PawAds bridge retrieves native ad config', async () => {
+  const {context, run} = harness();
+  const mockConfig = {
+    isDebug: false,
+    bannerAdUnitId: 'ca-app-pub-9251474250306859/9607926427',
+    interstitialAdUnitId: 'ca-app-pub-9251474250306859/7873219107',
+    isTesting: false
+  };
+  context.window.Capacitor = {
+    isNativePlatform: () => true,
+    nativePromise: async (plugin, method) => {
+      if (plugin === 'PawAds' && method === 'getAdConfig') return mockConfig;
+      return null;
+    }
+  };
+  const config = await run('getAdConfig()');
+  assert.deepEqual(config, mockConfig);
+});
+
+test('Consent flow checks UMP status before initializing ads', async () => {
+  const {context, run} = harness();
+  let initialized = false;
+  let bannerShown = false;
+  let canRequest = false;
+
+  context.window.Capacitor = {
+    isNativePlatform: () => true,
+    Plugins: {
+      AdMob: {
+        requestConsentInfo: async () => ({ canRequestAds: canRequest, privacyOptionsRequirementStatus: 'REQUIRED' }),
+        showConsentForm: async () => ({ canRequestAds: canRequest, privacyOptionsRequirementStatus: 'REQUIRED' }),
+        initialize: async () => { initialized = true; },
+        showBanner: async () => { bannerShown = true; },
+        prepareInterstitial: async () => {}
+      }
+    }
+  };
+
+  // 1. When canRequestAds is false, ads are NOT initialized
+  await run('checkConsentState(true)');
+  assert.equal(run('adsInitialized'), false);
+  assert.equal(initialized, false);
+  assert.equal(bannerShown, false);
+  assert.equal(run('privacyOptionsRequired'), true);
+
+  // 2. When canRequestAds is true, ads initialize and banner is shown
+  canRequest = true;
+  await run('checkConsentState(true)');
+  assert.equal(run('adsInitialized'), true);
+  assert.equal(initialized, true);
+  assert.equal(bannerShown, true);
+});
+
+test('Interstitial enforces frequency cap and does not show on launch', async () => {
+  const {context, run} = harness();
+  let interstitialShown = false;
+
+  context.window.Capacitor = {
+    isNativePlatform: () => true,
+    Plugins: {
+      AdMob: {
+        prepareInterstitial: async () => {},
+        showInterstitial: async () => { interstitialShown = true; }
+      }
+    }
+  };
+
+  run('adsInitialized = true; interstitialReady = true;');
+
+  // Immediately on launch / right after app starts: frequency cap blocks it
+  await run('maybeShowInterstitial()');
+  assert.equal(interstitialShown, false);
+
+  // Advance time past the 3-minute frequency cap: now it shows
+  run('lastInterstitialTime = Date.now() - (4 * 60 * 1000);');
+  await run('maybeShowInterstitial()');
+  assert.equal(interstitialShown, true);
+
+  // Subsequent call immediately after is blocked again
+  interstitialShown = false;
+  await run('maybeShowInterstitial()');
+  assert.equal(interstitialShown, false);
+});

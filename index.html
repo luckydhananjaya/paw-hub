@@ -1281,7 +1281,7 @@
   <footer class="admob-reserved-area">
     <div class="admob-placeholder">
       <span class="ad-badge">AD</span>
-      <span>AdMob Banner (Google Test Ad Area)</span>
+      <span>Paw Note</span>
     </div>
   </footer>
 
@@ -1370,7 +1370,7 @@
       <div class="settings-item">
         <div>
           <div style="font-weight: bold; font-size: 17px;">Paw Note</div>
-          <div style="font-size: 13px; color: #7A7571;" class="text-muted">Version 1.0.2 (Capacitor 8)</div>
+          <div style="font-size: 13px; color: #7A7571;" class="text-muted">Version 1.0.3 (Capacitor 8)</div>
         </div>
         <span style="font-size: 20px;">🐾</span>
       </div>
@@ -1413,6 +1413,11 @@
       </div>
       <div class="settings-item">
         <button class="settings-btn" onclick="openPlayStoreListing()">Rate Paw Note</button>
+      </div>
+
+      <!-- Privacy Options (shown when required by UMP consent) -->
+      <div class="settings-item" id="privacy-options-item" style="display: none;">
+        <button class="settings-btn" onclick="openPrivacyOptions()">Privacy options</button>
       </div>
 
       <div class="settings-item">
@@ -1578,25 +1583,204 @@
   // IN-APP REVIEW PROMPT (Natural moment, strictly un-gated)
   async function maybePromptInAppReview() {
     try {
-      if (typeof localStorage === 'undefined' || !localStorage.getItem) return;
+      if (typeof localStorage === 'undefined' || !localStorage.getItem) return false;
       // 1. Must have at least 5 notes
-      if (!Array.isArray(notes) || notes.length < 5) return;
+      if (!Array.isArray(notes) || notes.length < 5) return false;
 
       // 2. Must have at least 3 distinct active days
       const rawDays = localStorage.getItem('paw_active_days');
       const days = rawDays ? JSON.parse(rawDays) : [];
-      if (!Array.isArray(days) || days.length < 3) return;
+      if (!Array.isArray(days) || days.length < 3) return false;
 
       // 3. Must respect 30-day quota interval
       const lastPrompt = parseInt(localStorage.getItem('paw_review_last_prompt_time') || '0', 10);
       const now = Date.now();
       const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-      if (now - lastPrompt < THIRTY_DAYS) return;
+      if (now - lastPrompt < THIRTY_DAYS) return false;
 
       localStorage.setItem('paw_review_last_prompt_time', String(now));
       await reviewPlugin().requestReview();
+      return true;
     } catch (e) {
       // Fail silently
+      return false;
+    }
+  }
+
+  // ADMOB & UMP CONSENT CONFIGURATION
+  const DEFAULT_AD_CONFIG = {
+    isDebug: false,
+    bannerAdUnitId: 'ca-app-pub-9251474250306859/9607926427',
+    interstitialAdUnitId: 'ca-app-pub-9251474250306859/7873219107',
+    isTesting: false
+  };
+
+  let currentAdConfig = { ...DEFAULT_AD_CONFIG };
+  let privacyOptionsRequired = false;
+  let adsInitialized = false;
+  let bannerLoaded = false;
+  let interstitialReady = false;
+  let interstitialPreparing = false;
+  let lastInterstitialTime = Date.now();
+  const INTERSTITIAL_MIN_INTERVAL = 3 * 60 * 1000; // 3 minutes frequency cap
+
+  async function getAdConfig() {
+    const cap = typeof window !== 'undefined' ? window.Capacitor : null;
+    if (cap && cap.isNativePlatform && cap.isNativePlatform() && typeof cap.nativePromise === 'function') {
+      try {
+        const cfg = await cap.nativePromise('PawAds', 'getAdConfig', {});
+        if (cfg && cfg.bannerAdUnitId) {
+          currentAdConfig = cfg;
+          return cfg;
+        }
+      } catch (e) {}
+    }
+    return currentAdConfig;
+  }
+
+  function updatePrivacyOptionsUI() {
+    if (typeof document === 'undefined' || !document.getElementById) return;
+    const el = document.getElementById('privacy-options-item');
+    if (el) {
+      el.style.display = privacyOptionsRequired ? 'flex' : 'none';
+    }
+  }
+
+  async function openPrivacyOptions() {
+    const cap = typeof window !== 'undefined' ? window.Capacitor : null;
+    if (!cap || !cap.Plugins || !cap.Plugins.AdMob) return;
+    try {
+      await cap.Plugins.AdMob.showPrivacyOptionsForm();
+      await checkConsentState(false);
+    } catch (err) {
+      console.log('Privacy options form notice:', err);
+    }
+  }
+
+  async function prepareInterstitialAd() {
+    const cap = typeof window !== 'undefined' ? window.Capacitor : null;
+    if (!cap || !cap.Plugins || !cap.Plugins.AdMob || interstitialPreparing || !adsInitialized) return;
+    interstitialPreparing = true;
+    try {
+      const opts = {
+        adId: currentAdConfig.interstitialAdUnitId
+      };
+      if (currentAdConfig.isDebug && currentAdConfig.isTesting) {
+        opts.isTesting = true;
+      }
+      await cap.Plugins.AdMob.prepareInterstitial(opts);
+      interstitialReady = true;
+    } catch (e) {
+      interstitialReady = false;
+    } finally {
+      interstitialPreparing = false;
+    }
+  }
+
+  async function maybeShowInterstitial() {
+    const cap = typeof window !== 'undefined' ? window.Capacitor : null;
+    if (!cap || !cap.Plugins || !cap.Plugins.AdMob || !adsInitialized) return;
+
+    const now = Date.now();
+    if (now - lastInterstitialTime < INTERSTITIAL_MIN_INTERVAL) return;
+
+    if (!interstitialReady) {
+      prepareInterstitialAd();
+      return;
+    }
+
+    try {
+      await cap.Plugins.AdMob.showInterstitial();
+      lastInterstitialTime = Date.now();
+      interstitialReady = false;
+      setTimeout(() => {
+        prepareInterstitialAd();
+      }, 5000);
+    } catch (e) {
+      interstitialReady = false;
+      prepareInterstitialAd();
+    }
+  }
+
+  async function initializeAdsAndShowBanner() {
+    if (adsInitialized) return;
+    const cap = typeof window !== 'undefined' ? window.Capacitor : null;
+    if (!cap || !cap.Plugins || !cap.Plugins.AdMob) return;
+    const AdMob = cap.Plugins.AdMob;
+
+    try {
+      const initOptions = {
+        requestTrackingAuthorization: false
+      };
+      if (currentAdConfig.isDebug && currentAdConfig.isTesting) {
+        initOptions.initializeForTesting = true;
+        initOptions.testingDevices = ['EMULATOR'];
+      }
+
+      await AdMob.initialize(initOptions);
+      adsInitialized = true;
+
+      const bannerOptions = {
+        adId: currentAdConfig.bannerAdUnitId,
+        adSize: 'BANNER',
+        position: 'BOTTOM_CENTER',
+        margin: 0
+      };
+      if (currentAdConfig.isDebug && currentAdConfig.isTesting) {
+        bannerOptions.isTesting = true;
+      }
+
+      await AdMob.showBanner(bannerOptions);
+      bannerLoaded = true;
+
+      prepareInterstitialAd();
+    } catch (err) {
+      console.log('Ad initialization notice:', err);
+    }
+  }
+
+  async function checkConsentState(showFormIfNeeded = true) {
+    const cap = typeof window !== 'undefined' ? window.Capacitor : null;
+    if (!cap || !cap.Plugins || !cap.Plugins.AdMob) return;
+    const AdMob = cap.Plugins.AdMob;
+
+    try {
+      await getAdConfig();
+
+      const requestOptions = {};
+      if (currentAdConfig.isDebug && currentAdConfig.isTesting) {
+        requestOptions.testDeviceIdentifiers = ['EMULATOR'];
+      }
+
+      const consentInfo = await AdMob.requestConsentInfo(requestOptions);
+      let canRequest = consentInfo && consentInfo.canRequestAds;
+      let reqStatus = consentInfo && consentInfo.privacyOptionsRequirementStatus;
+
+      if (showFormIfNeeded) {
+        try {
+          const formResult = await AdMob.showConsentForm();
+          if (formResult) {
+            canRequest = formResult.canRequestAds;
+            if (formResult.privacyOptionsRequirementStatus) {
+              reqStatus = formResult.privacyOptionsRequirementStatus;
+            }
+          }
+        } catch (formErr) {
+          console.log('Consent form notice:', formErr);
+        }
+      }
+
+      privacyOptionsRequired = (reqStatus === 'REQUIRED');
+      updatePrivacyOptionsUI();
+
+      if (canRequest) {
+        await initializeAdsAndShowBanner();
+      }
+    } catch (err) {
+      console.log('Consent update error:', err);
+      if (currentAdConfig) {
+        await initializeAdsAndShowBanner();
+      }
     }
   }
 
@@ -2563,7 +2747,10 @@
     await persistCurrentNote();
     document.getElementById('editor-overlay').classList.remove('active');
     activeNote = null;
-    maybePromptInAppReview();
+    const promptedReview = await maybePromptInAppReview();
+    if (!promptedReview) {
+      maybeShowInterstitial();
+    }
   }
 
   async function deleteCurrentNote() {
@@ -2592,6 +2779,7 @@
     const time = localStorage.getItem('paw_folder_backup_time');
     backupStatus(time ? 'Last backup: ' + time : 'Choose a folder once to enable automatic backups.');
     updateAppearanceUI();
+    updatePrivacyOptionsUI();
     document.getElementById('settings-overlay').classList.add('settings-active');
     document.getElementById('settings-overlay').classList.add('active');
   }
@@ -2633,10 +2821,10 @@
   // SEND FEEDBACK
   function openFeedbackEmail() {
     const email = 'luckydhananjaya@gmail.com';
-    const subject = encodeURIComponent('Paw Note Feedback (v1.0.2)');
+    const subject = encodeURIComponent('Paw Note Feedback (v1.0.3)');
     const ua = typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown';
     const body = encodeURIComponent(
-      '\n\n---\nApp Version: 1.0.2 (versionCode 1003)\nDevice: ' + ua + '\n'
+      '\n\n---\nApp Version: 1.0.3 (versionCode 1004)\nDevice: ' + ua + '\n'
     );
     window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
   }
@@ -2795,24 +2983,9 @@
         });
       }
 
-      // 3. AdMob Banner (Google official test IDs only)
+      // 3. AdMob & UMP Consent Initialization
       if (AdMob) {
-        AdMob.initialize({
-          requestTrackingAuthorization: false,
-          testingDevices: ['EMULATOR'],
-          initializeForTesting: true
-        }).then(() => {
-          return AdMob.showBanner({
-            adId: 'ca-app-pub-3940256099942544/6300978111', // Google Test Banner ID
-            adSize: 'BANNER',
-            position: 'BOTTOM_CENTER',
-            margin: 0,
-            isTesting: true
-          });
-        }).catch(err => {
-          // Graceful handling: note interface stays fully functional
-          console.log('AdMob test banner notice:', err);
-        });
+        checkConsentState(true);
       }
     }
   }

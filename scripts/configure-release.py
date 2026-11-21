@@ -4,11 +4,11 @@ import re
 from pathlib import Path
 
 def configure(project=Path("android/app/build.gradle"), signed=False):
-    code = int(os.environ.get("PAW_VERSION_CODE", "1003"))
-    LAST_ACCEPTED_VERSION_CODE = 1002
+    code = int(os.environ.get("PAW_VERSION_CODE", "1004"))
+    LAST_ACCEPTED_VERSION_CODE = 1003
     if code <= LAST_ACCEPTED_VERSION_CODE or code > 2100000000:
         raise ValueError(f"Invalid Android version code {code}: must be strictly greater than last uploaded versionCode ({LAST_ACCEPTED_VERSION_CODE})")
-    name = os.environ.get("PAW_VERSION_NAME", "1.0.2")
+    name = os.environ.get("PAW_VERSION_NAME", "1.0.3")
     if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[a-zA-Z0-9.-]+)?", name):
         raise ValueError("Invalid version name")
     text = project.read_text()

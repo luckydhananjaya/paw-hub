@@ -3,13 +3,13 @@ on:
   workflow_dispatch:
     inputs:
       version_name:
-        description: 'Version name (for example 1.0.2)'
+        description: 'Version name (for example 1.0.3)'
         required: true
-        default: '1.0.2'
+        default: '1.0.3'
       version_code:
-        description: 'Version code (must be > 1002, for example 1003)'
+        description: 'Version code (must be > 1003, for example 1004)'
         required: false
-        default: '1003'
+        default: '1004'
 permissions:
   contents: read
 jobs:
@@ -39,8 +39,8 @@ jobs:
           else
             V_CODE="$((1000 + GITHUB_RUN_NUMBER))"
           fi
-          if [ "$V_CODE" -le 1002 ]; then
-            echo "::error::versionCode ($V_CODE) must be strictly greater than last uploaded versionCode 1002"
+          if [ "$V_CODE" -le 1003 ]; then
+            echo "::error::versionCode ($V_CODE) must be strictly greater than last uploaded versionCode 1003"
             exit 1
           fi
           echo "PAW_VERSION_CODE=$V_CODE" >> "$GITHUB_ENV"
